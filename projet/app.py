@@ -895,6 +895,93 @@ def api_moyennes_classe(classe_id):
     })
 
 
+# --- Statistiques ----------------------------------------------------------------
+
+def derniere_sequence_notee():
+    """Dernière séquence qui contient au moins une note dans l'établissement."""
+    ligne = get_db().execute("SELECT MAX(sequence) AS s FROM notes").fetchone()
+    return ligne["s"] or 1
+
+
+def statistiques(sequence):
+    """Les quatre statistiques du sujet pour une séquence."""
+    db = get_db()
+    classes = db.execute("SELECT * FROM classes ORDER BY niveau, nom").fetchall()
+    resume_classes = []
+    premiers = []
+    toutes_moyennes = []
+    for classe in classes:
+        synthese = synthese_classe(classe, sequence)
+        toutes_moyennes += [e["moyenne"] for e in synthese["eleves"]]
+        resume_classes.append({
+            "id": classe["id"], "nom": classe["nom"], "filiere": classe["filiere"],
+            "moyenne_generale": synthese["moyenne_generale"],
+            "taux_reussite": synthese["taux_reussite"],
+            "admis": synthese["admis"], "effectif": synthese["classes"],
+        })
+        premiers.append({
+            "classe": classe["nom"],
+            "eleves": [{"id": e["id"], "nom": e["nom"], "prenom": e["prenom"], "moyenne": e["moyenne"],
+                        "rang": e["rang"], "ex_aequo": e["ex_aequo"]}
+                       for e in synthese["eleves"] if e["rang"] is not None and e["rang"] <= 3],
+        })
+
+    # Moyenne de chaque matière dans chaque classe (une seule requête groupée)
+    moyennes_matieres = {}
+    for ligne in db.execute(
+            "SELECT n.matiere_id, e.classe_id, AVG(n.note) AS moyenne FROM notes n "
+            "JOIN eleves e ON e.id = n.eleve_id WHERE n.sequence = ? "
+            "GROUP BY n.matiere_id, e.classe_id", (sequence,)).fetchall():
+        moyennes_matieres.setdefault(ligne["matiere_id"], {})[ligne["classe_id"]] = calculs.arrondir(ligne["moyenne"])
+    matieres = [{"id": m["id"], "nom": m["nom"], "coefficient": m["coefficient"],
+                 "moyennes": moyennes_matieres.get(m["id"], {})}
+                for m in db.execute("SELECT * FROM matieres ORDER BY coefficient DESC, nom").fetchall()]
+
+    return {
+        "sequence": sequence,
+        "classes": resume_classes,
+        "matieres": matieres,
+        "premiers": premiers,
+        "repartition": calculs.repartition(toutes_moyennes),
+        "effectif_total": sum(1 for m in toutes_moyennes if m is not None),
+        "moyenne_etablissement": calculs.moyenne_simple(toutes_moyennes),
+        "taux_etablissement": calculs.taux_reussite(toutes_moyennes),
+    }
+
+
+def sequence_statistiques():
+    """Séquence demandée pour les statistiques (?sequence=N), ou la dernière notée."""
+    sequence = lire_entier(request.args.get("sequence")) or derniere_sequence_notee()
+    return sequence if 1 <= sequence <= NOMBRE_SEQUENCES else None
+
+
+@app.route("/enseignant/statistiques")
+@connexion_requise
+def page_statistiques():
+    """Statistiques de l'établissement pour une séquence."""
+    sequence = sequence_statistiques()
+    if sequence is None:
+        abort(404)
+    notees = [ligne["sequence"] for ligne in get_db().execute(
+        "SELECT DISTINCT sequence FROM notes ORDER BY sequence").fetchall()]
+    return render_template("enseignant/statistiques.html", stats=statistiques(sequence),
+                           sequences=notees, nombre_sequences=NOMBRE_SEQUENCES)
+
+
+@app.route("/api/statistiques")
+def api_statistiques():
+    """Statistiques d'une séquence au format JSON (enseignants uniquement)."""
+    if g.enseignant is None:
+        return erreur_json("Accès réservé aux enseignants.", 403)
+    sequence = sequence_statistiques()
+    if sequence is None:
+        return erreur_json("La séquence va de 1 à 6.", 400)
+    stats = statistiques(sequence)
+    for matiere in stats["matieres"]:  # clés JSON en texte
+        matiere["moyennes"] = {str(cle): valeur for cle, valeur in matiere["moyennes"].items()}
+    return jsonify(stats)
+
+
 # --- Pages d'erreur ----------------------------------------------------------
 
 @app.errorhandler(403)

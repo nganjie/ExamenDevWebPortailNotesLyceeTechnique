@@ -558,3 +558,20 @@ input.case-note {
 .cellule-moyenne .jauge { margin-top: 0; flex: 1; }
 .zone-graphique-petite { height: 220px; }
 .tableau tbody tr[hidden] { display: none; }
+
+/* ---------- Statistiques ---------- */
+.texte-bleu-simple { color: var(--bleu); }
+.indicateur h3.indicateur-libelle { font-weight: 600; color: var(--texte); }
+.podium { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.podium li { display: flex; gap: 8px; align-items: center; font-size: 15px; }
+.podium a { flex: 1; min-width: 0; font-weight: 600; color: var(--texte); text-decoration: none; }
+.podium a:hover { text-decoration: underline; }
+.podium-moyenne { margin-left: auto; }
+.case-chaleur { display: block; padding: 8px 0; border-radius: 8px; font-weight: 600; }
+.teinte-0 { background: var(--fond-3); color: var(--texte-3); }
+.teinte-1 { background: var(--rouge-clair); color: var(--rouge-fonce); }
+.teinte-2 { background: var(--bleu-clair); color: var(--bleu-fonce); }
+.teinte-3 { background: var(--bleu-moyen); color: var(--bleu-fonce); }
+.teinte-4 { background: #8DADF4; color: var(--encre); }
+.pastille-couleur { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
+.tableau-chaleur td { padding: 6px 8px; }

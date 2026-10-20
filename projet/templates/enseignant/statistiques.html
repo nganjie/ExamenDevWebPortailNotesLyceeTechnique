@@ -1,0 +1,137 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, jauge with context %}
+
+{% block titre %}Statistiques · séquence {{ stats.sequence }}{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <span class="fil">Statistiques de l'établissement · {{ stats.classes|length }} classes · {{ stats.effectif_total }} élèves classés</span>
+        <h1>Résultats de la séquence {{ stats.sequence }}</h1>
+    </div>
+    <nav class="selecteur-pilules" aria-label="Choix de la séquence">
+        {% for numero in range(1, nombre_sequences + 1) %}
+            {% if numero in sequences %}
+            <a class="pilule" href="{{ url_for('page_statistiques', sequence=numero) }}"{% if numero == stats.sequence %} aria-current="page"{% endif %} aria-label="Séquence {{ numero }}">S{{ numero }}</a>
+            {% else %}
+            <span class="pilule pilule-inactive">S{{ numero }}</span>
+            {% endif %}
+        {% endfor %}
+    </nav>
+</div>
+
+<section class="pile" aria-labelledby="titre-classes">
+    <h2 id="titre-classes">Moyenne générale et taux de réussite par classe</h2>
+    <div class="indicateurs">
+        <div class="indicateur indicateur-principal">
+            <span class="indicateur-libelle">Établissement</span>
+            <span class="indicateur-valeur">{{ stats.moyenne_etablissement|note }}</span>
+            <span class="indicateur-detail gras">{{ stats.taux_etablissement|note }} % de réussite</span>
+        </div>
+        {% for classe in stats.classes %}
+        <article class="indicateur">
+            <h3 class="indicateur-libelle">{{ classe.nom }}</h3>
+            <div class="ligne-espacee">
+                <span class="indicateur-valeur">{{ classe.moyenne_generale|note }}</span>
+                <span class="gras texte-bleu-simple">{{ classe.taux_reussite|note }} %</span>
+            </div>
+            {{ jauge(classe.admis, classe.effectif) }}
+            <span class="indicateur-detail">{{ classe.admis }} élèves sur {{ classe.effectif }} ont la moyenne</span>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="disposition">
+    <section class="carte pile zone-principale" aria-labelledby="titre-repartition">
+        <div class="ligne-espacee">
+            <h2 id="titre-repartition">Répartition des moyennes</h2>
+            <span class="texte-secondaire texte-petit">{{ stats.effectif_total }} élèves</span>
+        </div>
+        <div class="zone-graphique">
+            <canvas id="graphique-tranches" role="img" aria-label="Nombre d'élèves par tranche de moyenne">
+                {% for t in stats.repartition %}{{ t.tranche }} : {{ t.effectif }}. {% endfor %}
+            </canvas>
+        </div>
+        <div class="tableau-conteneur">
+        <table class="tableau tableau-compact">
+            <caption class="visuellement-cache">Nombre d'élèves par tranche de moyenne</caption>
+            <thead><tr>{% for t in stats.repartition %}<th scope="col" class="num">{{ t.tranche }}</th>{% endfor %}</tr></thead>
+            <tbody><tr>{% for t in stats.repartition %}<td class="num gras">{{ t.effectif }}</td>{% endfor %}</tr></tbody>
+        </table>
+        </div>
+    </section>
+
+    <section class="carte pile zone-laterale" aria-labelledby="titre-graphique-classes">
+        <h2 id="titre-graphique-classes">Comparaison des classes</h2>
+        <div class="zone-graphique">
+            <canvas id="graphique-classes" data-source="{{ url_for('api_statistiques', sequence=stats.sequence) }}" role="img" aria-label="Moyenne générale et taux de réussite de chaque classe">
+                {% for c in stats.classes %}{{ c.nom }} : {{ c.moyenne_generale|note }}. {% endfor %}
+            </canvas>
+        </div>
+        <p class="texte-tres-petit texte-secondaire" data-message-graphique>Source : /api/statistiques</p>
+    </section>
+</div>
+
+<section class="pile" aria-labelledby="titre-premiers">
+    <h2 id="titre-premiers">Les 3 premiers de chaque classe</h2>
+    <div class="grille-cartes">
+        {% for groupe in stats.premiers %}
+        <article class="carte pile">
+            <h3>{{ groupe.classe }}</h3>
+            <ol class="podium">
+                {% for e in groupe.eleves %}
+                <li>
+                    <span class="rang rang-podium">{{ e.rang }}</span>
+                    <a href="{{ url_for('fiche_eleve', eleve_id=e.id, sequence=stats.sequence) }}">{{ e.nom }} {{ e.prenom }}</a>
+                    {% if e.ex_aequo %}<span class="ex-aequo">ex</span>{% endif %}
+                    <span class="gras chiffres podium-moyenne">{{ e.moyenne|note }}</span>
+                </li>
+                {% endfor %}
+            </ol>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="carte carte-sans-marge" aria-labelledby="titre-matieres">
+    <div class="carte-entete">
+        <h2 id="titre-matieres">Moyenne de chaque matière par classe</h2>
+        <ul class="legende">
+            <li><span class="pastille-couleur teinte-1"></span>moins de 10</li>
+            <li><span class="pastille-couleur teinte-2"></span>10 à 12</li>
+            <li><span class="pastille-couleur teinte-3"></span>12 à 14</li>
+            <li><span class="pastille-couleur teinte-4"></span>14 et plus</li>
+        </ul>
+    </div>
+    <div class="tableau-conteneur">
+        <table class="tableau tableau-chaleur">
+            <thead>
+                <tr>
+                    <th scope="col">Matière</th>
+                    <th scope="col" class="num">Coef.</th>
+                    {% for classe in stats.classes %}<th scope="col" class="num">{{ classe.nom }}</th>{% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for matiere in stats.matieres %}
+                <tr>
+                    <th scope="row">{{ matiere.nom }}</th>
+                    <td class="num texte-secondaire">{{ matiere.coefficient }}</td>
+                    {% for classe in stats.classes %}
+                    {% set valeur = matiere.moyennes.get(classe.id) %}
+                    {% set teinte = 0 if valeur is none else (1 if valeur < 10 else (2 if valeur < 12 else (3 if valeur < 14 else 4))) %}
+                    <td class="num"><span class="case-chaleur teinte-{{ teinte }}">{{ valeur|note }}</span></td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vendor/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/statistiques.js') }}"></script>
+{% endblock %}
