@@ -1,0 +1,19 @@
+# Environnement virtuel (ne jamais le copier sur la clé USB)
+venv/
+.venv/
+env/
+
+# Fichiers Python compilés
+__pycache__/
+*.py[cod]
+
+# Éditeurs et systèmes
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Fichiers temporaires SQLite
+*.db-journal
+*.db-wal
+*.db-shm
