@@ -34,13 +34,13 @@ if (formulaire) {
     const existantes = Array.from(formulaire.querySelectorAll("[data-note-existante]")).map(function (element) {
         return Number(element.dataset.noteExistante);
     });
-    const zoneMoyenne = document.querySelector("[data-moyenne-direct]");
-    const zoneSaisies = document.querySelector("[data-nombre-saisies]");
-    const zoneErreurs = document.querySelector("[data-nombre-erreurs]");
+    const zonesMoyenne = document.querySelectorAll("[data-moyenne-direct]");
+    const zonesSaisies = document.querySelectorAll("[data-nombre-saisies]");
+    const zonesErreurs = document.querySelectorAll("[data-nombre-erreurs]");
     const cadreErreurs = document.querySelector("[data-zone-erreurs]");
     const zoneMax = document.querySelector("[data-note-max]");
     const zoneMin = document.querySelector("[data-note-min]");
-    const bouton = document.querySelector("[data-bouton-enregistrer]");
+    const boutons = document.querySelectorAll("[data-bouton-enregistrer]");
     const messageBouton = document.querySelector("[data-message-bouton]");
 
     // Affiche ou efface l'erreur d'une case
@@ -59,6 +59,10 @@ if (formulaire) {
         }
     }
 
+    function ecrire(zones, texte) {
+        zones.forEach(function (zone) { zone.textContent = texte; });
+    }
+
     // Recalcule la synthèse à partir des notes existantes et des cases valides
     function recalculer() {
         const valeurs = existantes.slice();
@@ -75,15 +79,18 @@ if (formulaire) {
         });
 
         const somme = valeurs.reduce(function (total, v) { return total + v; }, 0);
-        zoneMoyenne.textContent = valeurs.length ? formater(somme / valeurs.length) : "—";
-        zoneSaisies.textContent = valeurs.length;
-        zoneErreurs.textContent = erreurs;
+        // Plusieurs zones affichent les mêmes chiffres (panneau latéral et barre du téléphone)
+        ecrire(zonesMoyenne, valeurs.length ? formater(somme / valeurs.length) : "—");
+        ecrire(zonesSaisies, valeurs.length);
+        ecrire(zonesErreurs, erreurs);
         cadreErreurs.classList.toggle("mini-indicateur-erreur", erreurs > 0);
         zoneMax.textContent = valeurs.length ? formater(Math.max.apply(null, valeurs)) : "—";
         zoneMin.textContent = valeurs.length ? formater(Math.min.apply(null, valeurs)) : "—";
 
-        if (bouton) {
+        boutons.forEach(function (bouton) {
             bouton.disabled = erreurs > 0 || nouvelles === 0;
+        });
+        if (messageBouton) {
             if (erreurs > 0) {
                 messageBouton.textContent = "Corrigez les " + erreurs + " note(s) en rouge pour enregistrer.";
             } else if (nouvelles === 0) {

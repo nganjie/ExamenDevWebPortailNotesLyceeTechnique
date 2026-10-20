@@ -45,15 +45,15 @@
         <div class="tableau-conteneur" tabindex="0">
             <table class="tableau tableau-saisie">
                 <thead>
-                    <tr><th scope="col" class="num">N°</th><th scope="col">Élève</th><th scope="col">Matricule</th><th scope="col">Note / 20</th></tr>
+                    <tr><th scope="col" class="num colonne-secondaire">N°</th><th scope="col">Élève</th><th scope="col" class="colonne-secondaire">Matricule</th><th scope="col">Note / 20</th></tr>
                 </thead>
                 <tbody>
                     {% for eleve in eleves %}
                     {% set erreur = erreurs.get(eleve.id) %}
                     <tr{% if erreur %} class="ligne-en-erreur"{% endif %}>
-                        <td class="num texte-secondaire">{{ loop.index }}</td>
-                        <th scope="row">{% if eleve.note is none and saisie_ouverte %}<label for="note-{{ eleve.id }}">{{ eleve.nom }} {{ eleve.prenom }}</label>{% else %}{{ eleve.nom }} {{ eleve.prenom }}{% endif %}</th>
-                        <td class="chiffres texte-secondaire sans-retour">{{ eleve.matricule }}</td>
+                        <td class="num texte-secondaire colonne-secondaire">{{ loop.index }}</td>
+                        <th scope="row">{% if eleve.note is none and saisie_ouverte %}<label for="note-{{ eleve.id }}">{{ eleve.nom }} {{ eleve.prenom }}</label>{% else %}{{ eleve.nom }} {{ eleve.prenom }}{% endif %}<span class="sous-texte seulement-mobile">{{ eleve.matricule }}</span></th>
+                        <td class="chiffres texte-secondaire sans-retour colonne-secondaire">{{ eleve.matricule }}</td>
                         <td>
                             {% if eleve.note is not none %}
                             <span class="ligne">
@@ -101,6 +101,18 @@
             <span>Chaque note est revérifiée par le serveur. Si une seule note est refusée, aucune n'est enregistrée. Une note déjà saisie se modifie avec « Corriger ».</span>
         </div>
     </aside>
+
+    {% if saisie_ouverte and synthese.saisies < eleves|length %}
+    {# Barre fixe sur téléphone : moyenne en direct et bouton toujours visibles #}
+    <div class="barre-saisie-mobile">
+        <span class="pile-serree">
+            <span class="texte-tres-petit">Moyenne en direct</span>
+            <span class="gras barre-saisie-moyenne" data-moyenne-direct>{{ synthese.moyenne|note }}</span>
+        </span>
+        <span class="texte-tres-petit"><span data-nombre-saisies>{{ synthese.saisies }}</span> / {{ eleves|length }} · <span data-nombre-erreurs>{{ erreurs|length }}</span> erreur(s)</span>
+        <button type="submit" class="bouton bouton-principal" data-bouton-enregistrer>{{ icone("coche") }}Enregistrer</button>
+    </div>
+    {% endif %}
 </form>
 {% endblock %}
 

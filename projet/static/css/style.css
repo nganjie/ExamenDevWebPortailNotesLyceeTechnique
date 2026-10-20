@@ -623,3 +623,20 @@ input.case-note {
 .ligne-centree { justify-content: center; }
 .code-tableau { letter-spacing: 0.1em; font-size: 17px; }
 .resultat-import .encadre { text-align: left; }
+
+/* Saisie sur téléphone : colonnes secondaires masquées, barre de synthèse fixe en bas */
+.seulement-mobile { display: none; }
+.barre-saisie-mobile { display: none; }
+@media (max-width: 599px) {
+    .colonne-secondaire { display: none; }
+    .tableau .seulement-mobile { display: block; }
+    input.case-note { width: 84px; }
+    .barre-saisie-mobile {
+        position: sticky; bottom: 0; z-index: 10;
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        width: 100%; padding: 10px 12px; border-radius: 12px 12px 0 0;
+        background: var(--encre); color: #FFFFFF; box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.2);
+    }
+    .barre-saisie-moyenne { font-family: var(--police-titre); font-size: 22px; }
+    .barre-saisie-mobile .bouton:disabled { background: #334155; border-color: #334155; color: #CBD5E1; }
+}
