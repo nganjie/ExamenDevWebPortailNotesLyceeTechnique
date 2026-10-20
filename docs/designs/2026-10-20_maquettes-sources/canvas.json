@@ -11,12 +11,17 @@
     "BulletinMobile.dc.html": {"x": 3510, "y": 0, "w": 390, "h": 1240, "title": "4 · Bulletin (téléphone)"},
     "Saisie.dc.html": {"x": 0, "y": 1980, "w": 1440, "h": 2140, "title": "5 · Saisie des notes d'une classe", "expand": "fill", "is_interactive": true},
     "ListeClasse.dc.html": {"x": 1520, "y": 1980, "w": 1440, "h": 2060, "title": "6 · Liste de classe, moyennes et rangs", "expand": "fill"},
-    "Statistiques.dc.html": {"x": 3040, "y": 1980, "w": 1440, "h": 1640, "title": "7 · Statistiques", "expand": "fill"}
+    "Statistiques.dc.html": {"x": 3040, "y": 1980, "w": 1440, "h": 1640, "title": "7 · Statistiques", "expand": "fill"},
+    "Classes.dc.html": {"x": 0, "y": 4540, "w": 1440, "h": 1180, "title": "8 · Gestion des classes", "expand": "fill"},
+    "Eleves.dc.html": {"x": 1520, "y": 4540, "w": 1440, "h": 1320, "title": "9 · Élèves d'une classe", "expand": "fill"},
+    "ImportEleves.dc.html": {"x": 3040, "y": 4540, "w": 1440, "h": 1460, "title": "10 · Import d'élèves (CSV, XLSX, XLS, ODS)", "expand": "fill", "is_interactive": true},
+    "Evaluations.dc.html": {"x": 4560, "y": 4540, "w": 1440, "h": 1280, "title": "11 · Évaluations", "expand": "fill"}
   },
-  "order": ["Main.dc.html", "Bulletin.dc.html", "ConnexionMobile.dc.html", "BulletinMobile.dc.html", "Saisie.dc.html", "ListeClasse.dc.html", "Statistiques.dc.html"],
+  "order": ["Main.dc.html", "Bulletin.dc.html", "ConnexionMobile.dc.html", "BulletinMobile.dc.html", "Saisie.dc.html", "ListeClasse.dc.html", "Statistiques.dc.html", "Classes.dc.html", "Eleves.dc.html", "ImportEleves.dc.html", "Evaluations.dc.html"],
   "notes": {
     "eleve": {"x": 0, "y": -300, "text": "Espace élève / parent", "kind": "title1", "maxW": 3900},
-    "enseignant": {"x": 0, "y": 1680, "text": "Espace enseignant (administration)", "kind": "title1", "maxW": 4480}
+    "enseignant": {"x": 0, "y": 1680, "text": "Espace enseignant (administration)", "kind": "title1", "maxW": 4480},
+    "gestion": {"x": 0, "y": 4240, "text": "Gestion : classes, élèves, import et évaluations", "kind": "title1", "maxW": 6000}
   },
   "designSystems": []
 }

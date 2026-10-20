@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Gestion des classes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F7FB}
+a{color:#1D4ED8}a:hover{color:#1E3A8A}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F5F7FB; font-family: Inter, system-ui, sans-serif; color: #0F172A; display: flex; flex-wrap: wrap">
+
+  <aside style="flex: 1 1 248px; max-width: 100%; background: #0F172A; color: #E2E8F0; padding: 24px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+    <a href="Main.dc.html" style="display: flex; gap: 10px; align-items: center; text-decoration: none; color: #FFFFFF; padding: 0 8px">
+      <span style="width: 38px; height: 38px; border-radius: 10px; background: {{primary}}; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"></path><path d="M6 12v5c3 2 9 2 12 0v-5"></path></svg>
+      </span>
+      <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 16px">Espace enseignant</span>
+    </a>
+    <nav aria-label="Menu enseignant" style="display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="padding: 0 12px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #94A3B8">Pédagogie</span>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px">
+          <li><a href="Evaluations.dc.html" style="display: block; padding: 11px 12px; border-radius: 8px; color: #CBD5E1; text-decoration: none; font-weight: 500; font-size: 15px">Évaluations</a></li>
+          <li><a href="Saisie.dc.html" style="display: block; padding: 11px 12px; border-radius: 8px; color: #CBD5E1; text-decoration: none; font-weight: 500; font-size: 15px">Saisie des notes</a></li>
+          <li><a href="ListeClasse.dc.html" style="display: block; padding: 11px 12px; border-radius: 8px; color: #CBD5E1; text-decoration: none; font-weight: 500; font-size: 15px">Listes de classe</a></li>
+          <li><a href="Statistiques.dc.html" style="display: block; padding: 11px 12px; border-radius: 8px; color: #CBD5E1; text-decoration: none; font-weight: 500; font-size: 15px">Statistiques</a></li>
+        </ul>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="padding: 0 12px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #94A3B8">Administration</span>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px">
+          <li><a href="Classes.dc.html" aria-current="page" style="display: block; padding: 11px 12px; border-radius: 8px; background: #1E293B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 15px">Classes</a></li>
+          <li><a href="Eleves.dc.html" style="display: block; padding: 11px 12px; border-radius: 8px; color: #CBD5E1; text-decoration: none; font-weight: 500; font-size: 15px">Élèves</a></li>
+          <li><a href="ImportEleves.dc.html" style="display: block; padding: 11px 12px; border-radius: 8px; color: #CBD5E1; text-decoration: none; font-weight: 500; font-size: 15px">Importer des élèves</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div style="margin-top: auto; padding: 14px 8px 0; border-top: 1px solid #1E293B; display: flex; flex-direction: column; gap: 10px">
+      <span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 600; color: #FFFFFF">M. Fotso Jean</span><span style="font-size: 13px; color: #94A3B8">Électrotechnique · administrateur</span></span>
+      <a href="Main.dc.html" style="color: #CBD5E1; font-size: 14px">Se déconnecter</a>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 640px; min-width: 0; padding: 28px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: flex-end">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 14px; color: #475569">Administration · Année scolaire 2026-2027</span>
+        <h1 style="margin: 0; font-family: Manrope, sans-serif; font-weight: 800; font-size: 30px">Classes</h1>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <a href="ImportEleves.dc.html" style="display: inline-flex; align-items: center; height: 44px; padding: 0 16px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; color: #0F172A; font-size: 15px; font-weight: 600; text-decoration: none">Importer des élèves</a>
+        <a href="#nouvelle-classe" style="display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 10px; background: {{primary}}; color: #FFFFFF; font-size: 15px; font-weight: 600; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Nouvelle classe</a>
+      </div>
+    </div>
+
+    <section aria-label="Résumé" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; color: #475569">Classes</span><span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 28px">4</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; color: #475569">Élèves inscrits</span><span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 28px">120</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; color: #475569">Places disponibles</span><span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 28px">20</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; color: #475569">Filières</span><span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 28px">F1 · F2 · F3 · F4</span></div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+      <section aria-label="Liste des classes" style="flex: 999 1 520px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px">
+        <sc-for list="{{classes}}" as="c" hint-placeholder-count="4">
+          <article style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; justify-content: space-between; gap: 10px; align-items: flex-start">
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{c.nom}}</h2>
+                <span style="font-size: 14px; color: #475569">{{c.filiere}}</span>
+              </div>
+              <span style="padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: {{c.fondCode}}; color: {{c.texteCode}}">{{c.code}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div style="display: flex; justify-content: space-between; font-size: 14px"><span style="color: #475569">Effectif</span><span style="font-weight: 700">{{c.effectif}} / {{c.max}}</span></div>
+              <span style="height: 8px; border-radius: 999px; background: #EEF2F7; overflow: hidden"><span style="display: block; height: 8px; border-radius: 999px; width: {{c.largeur}}; background: {{c.couleurBarre}}"></span></span>
+            </div>
+            <dl style="margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 14px">
+              <dt style="color: #475569">Prof. principal</dt><dd style="margin: 0; font-weight: 600">{{c.pp}}</dd>
+              <dt style="color: #475569">Matières</dt><dd style="margin: 0; font-weight: 600">8 · coef. total 24</dd>
+            </dl>
+            <div style="display: flex; gap: 8px; padding-top: 4px; border-top: 1px solid #EEF2F7">
+              <a href="Eleves.dc.html" style="flex: 1; display: inline-flex; justify-content: center; align-items: center; height: 44px; border-radius: 10px; background: #F1F5F9; color: #0F172A; font-size: 14px; font-weight: 600; text-decoration: none">Voir les élèves</a>
+              <a href="#nouvelle-classe" style="display: inline-flex; justify-content: center; align-items: center; height: 44px; padding: 0 14px; border-radius: 10px; color: {{primary}}; font-size: 14px; font-weight: 600; text-decoration: none">Modifier</a>
+            </div>
+          </article>
+        </sc-for>
+      </section>
+
+      <form id="nouvelle-classe" style="flex: 1 1 300px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <h2 style="margin: 0; font-family: Manrope, sans-serif; font-size: 18px; font-weight: 800">Nouvelle classe</h2>
+          <p style="margin: 0; font-size: 14px; color: #475569">Les champs marqués * sont obligatoires.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="k-nom" style="font-size: 14px; font-weight: 600">Nom de la classe *</label>
+          <input id="k-nom" type="text" value="2e année F3" aria-invalid="true" aria-describedby="k-nom-err" style="height: 46px; padding: 0 12px; border: 2px solid #B91C1C; border-radius: 10px; font-size: 15px; font-family: Inter, sans-serif">
+          <span id="k-nom-err" style="font-size: 13px; color: #B91C1C">Une classe porte déjà ce nom.</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="k-niveau" style="font-size: 14px; font-weight: 600">Niveau *</label>
+            <select id="k-niveau" style="height: 46px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font-size: 15px; font-family: Inter, sans-serif"><option>1re année</option><option selected="selected">2e année</option><option>3e année</option><option>4e année</option></select>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="k-max" style="font-size: 14px; font-weight: 600">Effectif max. *</label>
+            <input id="k-max" type="number" min="1" max="60" value="35" style="height: 46px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font-size: 15px; font-family: Inter, sans-serif">
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="k-filiere" style="font-size: 14px; font-weight: 600">Filière *</label>
+          <select id="k-filiere" style="height: 46px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font-size: 15px; font-family: Inter, sans-serif"><option>F1 — Construction mécanique</option><option>F2 — Électronique</option><option selected="selected">F3 — Électrotechnique</option><option>F4 — Génie civil</option></select>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="k-pp" style="font-size: 14px; font-weight: 600">Professeur principal</label>
+          <select id="k-pp" style="height: 46px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font-size: 15px; font-family: Inter, sans-serif"><option>— Aucun —</option><option selected="selected">M. Fotso Jean</option><option>M. Atangana Pierre</option><option>Mme Ekane Brigitte</option></select>
+        </div>
+        <button type="submit" style="height: 50px; border: 0; border-radius: 10px; background: {{primary}}; color: #FFFFFF; font-size: 16px; font-weight: 600; font-family: Inter, sans-serif; cursor: pointer">Créer la classe</button>
+        <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.5">Une classe qui contient des élèves ne peut pas être supprimée ; son effectif maximal ne peut pas descendre sous l'effectif actuel.</p>
+      </form>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#1D4ED8","options":["#1D4ED8","#0F766E","#7C3AED"]},"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const primary = this.props.primary ?? '#1D4ED8';
+    const classes = [
+      ['2e année F3', 'Électrotechnique', 'F3', 30, 35, 'M. Fotso Jean'],
+      ['3e année F2', 'Électronique', 'F2', 30, 35, 'Mme Ekane Brigitte'],
+      ['1re année F4', 'Génie civil', 'F4', 30, 35, 'M. Njoya Salomon'],
+      ['4e année F1', 'Construction mécanique', 'F1', 30, 35, 'M. Kamga Victor'],
+    ].map(([nom, filiere, code, effectif, max, pp]) => {
+      const taux = effectif / max;
+      return {
+        nom, filiere, code, effectif, max, pp,
+        largeur: (taux * 100).toFixed(1) + '%',
+        couleurBarre: taux >= 1 ? '#B91C1C' : (taux >= 0.9 ? '#D97706' : primary),
+        fondCode: '#E8EEFD',
+        texteCode: '#1E3A8A',
+      };
+    });
+    return { primary, classes };
+  }
+}
+</script>
+</body>
+</html>

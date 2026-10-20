@@ -18,7 +18,7 @@
 4. [Fonctionnalités](#4-fonctionnalités)
 5. [Statistiques attendues](#5-statistiques-attendues)
 6. [Règles métier critiques](#6-règles-métier-critiques)
-7. [Bonus](#7-bonus)
+7. [Bonus](#7-bonus) et [extensions demandées par le groupe](#7-bis-extensions-demandées-par-le-groupe-au-delà-du-sujet)
 8. [Exigences techniques communes](#8-exigences-techniques-communes)
 9. [Livrables](#9-livrables)
 10. [Clé USB et arborescence](#10-clé-usb-et-arborescence)
@@ -149,6 +149,41 @@ Tables et colonnes **minimales** (on peut en ajouter si la conception le justifi
 - `P3-BON-1` **Bulletin imprimable proprement** (feuille de style `@media print`).
 - `P3-BON-2` **Appréciation automatique** selon la moyenne (ex. < 8 « Insuffisant », 8-10 « Médiocre »,
   10-12 « Passable », 12-14 « Assez bien », 14-16 « Bien », ≥ 16 « Très bien »).
+
+### 7 bis. Extensions demandées par le groupe (au-delà du sujet)
+
+Ajoutées le 2026-10-20. Elles ne remplacent aucune exigence du sujet ; elles complètent l'espace enseignant.
+
+- `P3-EXT-1` **Gestion des classes** : ajouter, modifier une classe (nom unique, niveau, filière,
+  effectif maximal, professeur principal). Une classe contenant des élèves ne se supprime pas ;
+  son effectif maximal ne descend pas sous l'effectif actuel.
+- `P3-EXT-2` **Ajout d'un élève dans une classe** : nom, prénom, date de naissance, classe, matricule
+  proposé automatiquement (unique). Un **code d'accès est généré**, affiché **une seule fois**, et seule
+  son empreinte est enregistrée. Possibilité de générer un nouveau code.
+- `P3-EXT-3` **Import d'élèves depuis un fichier** **CSV, XLSX, XLS ou ODS** (2 Mo max) :
+  choix de la classe → analyse → correspondance des colonnes → aperçu avec erreurs ligne par ligne
+  (champ manquant, date invalide, matricule en doublon, effectif maximal dépassé) → import des lignes
+  valides → liste des codes d'accès téléchargeable une fois + rapport d'import. Modèles `.csv` / `.xlsx`
+  téléchargeables. Tout est revérifié côté serveur (`G-TECH-8`).
+- `P3-EXT-4` **Évaluations** : créer une évaluation (intitulé, classe, matière, séquence, date) ;
+  statuts *Planifiée*, *À saisir*, *En cours*, *Complète*, *Clôturée* ; la saisie des notes
+  (`P3-ADM-2`) se fait à partir d'une évaluation. Une évaluation clôturée ne se modifie plus que par
+  une correction motivée (`P3-ADM-3`).
+- `P3-EXT-5` **Rôle administrateur** : les pages *Classes*, *Élèves* et *Import* sont réservées aux
+  comptes ayant le rôle `administrateur` (contrôle côté serveur) ; un enseignant ne crée des
+  évaluations et ne saisit des notes que pour ses propres matières.
+- `P3-EXT-6` **Export CSV** de la liste des élèves d'une classe.
+
+Conséquences techniques à prévoir :
+
+- table `evaluations` (`classe_id`, `matiere_id`, `sequence`, `intitule`, `date`, `statut`) avec
+  `UNIQUE (classe_id, matiere_id, sequence)` : une évaluation = la note de séquence, ce qui garde
+  la règle `P3-RG-3` (`UNIQUE (eleve_id, matiere_id, sequence)` sur `notes`) ;
+- colonne `role` dans `enseignants` (`CHECK (role IN ('enseignant', 'administrateur'))`) et
+  `niveau`, `professeur_principal_id` dans `classes` ;
+- bibliothèques Python : `openpyxl` (XLSX), `xlrd` (XLS), `odfpy` ou `pandas` (ODS) ; le CSV utilise
+  le module standard `csv` (séparateurs `,` et `;`, encodage UTF-8 et Windows-1252) ;
+- ces bibliothèques s'ajoutent à `requirements.txt` (le README reste valable).
 
 ---
 
@@ -348,7 +383,8 @@ Le sujet laisse certains choix ouverts ; ils seront tranchés et justifiés dans
 | H6 | Rang : par séquence ou annuel ? | Par séquence (bulletin de séquence) ; l'historique montre la moyenne de chaque séquence. |
 | H7 | Qui fournit le code d'accès à l'élève/parent ? | Généré par l'administration (données de test : code connu, listé dans le README pour quelques élèves). |
 | H8 | Respect de l'effectif maximal ? | Vérifié côté serveur (et dans `donnees_test.py`) lors de l'ajout d'un élève à une classe. |
-| H9 | Rôle « proviseur / administrateur » distinct ? | Non obligatoire ; les enseignants constituent l'espace d'administration. Un champ `role` pourra être ajouté. |
+| H9 | Rôle « proviseur / administrateur » distinct ? | Oui depuis les extensions : champ `role` (`enseignant` / `administrateur`) dans `enseignants` (voir `P3-EXT-5`). |
+| H10 | Plusieurs évaluations par séquence et par matière ? | Non : une évaluation par classe, matière et séquence, qui donne la note de séquence. Alternative à discuter : plusieurs évaluations dont la moyenne donne la note de séquence (le calcul se complique). |
 
 ---
 
@@ -372,4 +408,10 @@ Le sujet laisse certains choix ouverts ; ils seront tranchés et justifiés dans
 | `P3-STAT-1..4` | Statistiques | — | à faire |
 | `P3-RG-1..5` | Règles métier (moyenne, rang, unicité, confidentialité) | — | à faire |
 | `P3-BON-1..2` | Bonus impression et appréciation | — | optionnel |
+| `P3-EXT-1` | Gestion des classes | — | maquette faite |
+| `P3-EXT-2` | Ajout d'un élève + code d'accès | — | maquette faite |
+| `P3-EXT-3` | Import CSV / XLSX / XLS / ODS | — | maquette faite |
+| `P3-EXT-4` | Évaluations | — | maquette faite |
+| `P3-EXT-5` | Rôle administrateur | — | à faire |
+| `P3-EXT-6` | Export CSV des élèves | — | maquette faite |
 | Squelette | Structure initiale de l'application | [`2026-10-20_squelette-initial`](specs/2026-10-20_squelette-initial.md) | fait |

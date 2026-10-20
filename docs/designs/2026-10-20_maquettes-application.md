@@ -3,7 +3,7 @@
 - Date : 2026-10-20
 - Canevas interactif : https://claude.ai/artifact/JcbmAFaLJXMij3v626AXHa (privé : à partager depuis le menu « Share »)
 - Sources des maquettes : [`2026-10-20_maquettes-sources/`](2026-10-20_maquettes-sources/)
-- Exigences illustrées : `P3-PUB-1..3`, `P3-ADM-1..4`, `P3-JS-1..3`, `P3-STAT-1..4`, `P3-RG-1..4`, `P3-BON-1..2`, `G-TECH-4`
+- Exigences illustrées : `P3-PUB-1..3`, `P3-ADM-1..4`, `P3-JS-1..3`, `P3-STAT-1..4`, `P3-RG-1..4`, `P3-BON-1..2`, `P3-EXT-1..6`, `G-TECH-4`
 
 ## Inspiration
 
@@ -40,6 +40,14 @@ Le bleu et l'orange se distinguent aussi par la luminosité (lisibles par les da
 | 5 | Saisie des notes d'une classe | ordinateur | 30 élèves sur une page, refus immédiat hors 0-20, moyenne de la classe en direct, enregistrement bloqué tant qu'il y a une erreur (interactif) |
 | 6 | Liste de classe | ordinateur | moyennes et rangs avec ex æquo (5, 5 puis 7 ; 8, 8 puis 10), formulaire de correction d'une note |
 | 7 | Statistiques | ordinateur | moyenne et taux de réussite par classe, répartition par tranches, 3 premiers par classe, moyenne de chaque matière par classe |
+| 8 | Gestion des classes | ordinateur | cartes des classes (effectif / max, prof. principal), formulaire « Nouvelle classe » avec erreur de nom déjà utilisé |
+| 9 | Élèves d'une classe | ordinateur | liste paginée, recherche, statut du code d'accès, ajout d'un élève avec matricule proposé, code généré affiché une seule fois, export CSV |
+| 10 | Import d'élèves | ordinateur | assistant en 3 étapes (interactif) : fichier CSV / XLSX / XLS / ODS, vérification (correspondance des colonnes, erreurs et doublons ligne par ligne), confirmation et codes d'accès |
+| 11 | Évaluations | ordinateur | calendrier des 6 séquences, liste filtrable avec progression de la saisie et statuts, formulaire « Nouvelle évaluation » |
+
+Les écrans enseignant ont un menu en deux parties : **Pédagogie** (Évaluations, Saisie des notes,
+Listes de classe, Statistiques) et **Administration** (Classes, Élèves, Import), cette dernière
+réservée au rôle administrateur (`P3-EXT-5`).
 
 ## Données fictives cohérentes
 
@@ -58,3 +66,5 @@ Les chiffres sont cohérents d'un écran à l'autre (ils serviront de base à `d
 - Bornes des appréciations automatiques (< 8 Insuffisant, 8-10 Médiocre, 10-12 Passable,
   12-14 Assez bien, 14-16 Bien, ≥ 16 Très bien).
 - Correction d'une note avec un motif (colonne supplémentaire à prévoir dans `notes` ou une table d'historique).
+- Une seule évaluation par classe, matière et séquence (hypothèse H10 du cahier des charges).
+- Formats d'import retenus : CSV et XLSX obligatoires, XLS et ODS si le temps le permet.
