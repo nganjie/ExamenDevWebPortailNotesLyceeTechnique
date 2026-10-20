@@ -28,7 +28,7 @@
                 <input id="champ-ancienne" type="text" value="{{ note.note|note }}" readonly>
             </div>
             {{ champ("nouvelle_note", "Nouvelle note", valeur=saisie.get("nouvelle_note", ""), erreur=erreurs.get("nouvelle_note"), obligatoire=True,
-                     attributs={"inputmode": "decimal", "maxlength": "5", "min": "0", "max": "20", "data-nombre": "",
+                     attributs={"inputmode": "decimal", "maxlength": "5", "data-min": "0", "data-max": "20", "data-nombre": "",
                                 "data-message-bornes": "La note doit être comprise entre 0 et 20.", "autocomplete": "off"}) }}
         </div>
         <div class="champ">
@@ -43,7 +43,7 @@
     <section class="carte carte-sans-marge zone-principale" aria-labelledby="titre-historique">
         <div class="carte-entete"><h2 id="titre-historique">Historique des corrections</h2></div>
         {% if historique %}
-        <div class="tableau-conteneur">
+        <div class="tableau-conteneur" tabindex="0">
             <table class="tableau">
                 <thead><tr><th scope="col">Date</th><th scope="col" class="num">Avant</th><th scope="col" class="num">Après</th><th scope="col">Motif</th><th scope="col">Par</th></tr></thead>
                 <tbody>

@@ -53,7 +53,7 @@
                 {% for t in stats.repartition %}{{ t.tranche }} : {{ t.effectif }}. {% endfor %}
             </canvas>
         </div>
-        <div class="tableau-conteneur">
+        <div class="tableau-conteneur" tabindex="0">
         <table class="tableau tableau-compact">
             <caption class="visuellement-cache">Nombre d'élèves par tranche de moyenne</caption>
             <thead><tr>{% for t in stats.repartition %}<th scope="col" class="num">{{ t.tranche }}</th>{% endfor %}</tr></thead>
@@ -104,7 +104,7 @@
             <li><span class="pastille-couleur teinte-4"></span>14 et plus</li>
         </ul>
     </div>
-    <div class="tableau-conteneur">
+    <div class="tableau-conteneur" tabindex="0">
         <table class="tableau tableau-chaleur">
             <thead>
                 <tr>

@@ -255,7 +255,7 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 .carte-accent { background: var(--bleu); border-color: var(--bleu); color: #FFFFFF; }
 
 /* ---------- Messages flash et encadrés ---------- */
-.messages { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.messages { margin: 0 0 16px; display: flex; flex-direction: column; gap: 8px; }
 .message, .encadre {
     display: flex; gap: 10px; align-items: flex-start;
     padding: 12px 14px; border-radius: 12px; border: 1px solid transparent;
@@ -316,6 +316,7 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 
 /* ---------- Tableaux ---------- */
 .tableau-conteneur { overflow-x: auto; }
+.tableau-conteneur:focus-visible { outline-offset: -3px; }
 .tableau { width: 100%; border-collapse: collapse; font-size: 15px; }
 .tableau th, .tableau td { padding: 12px 14px; text-align: left; vertical-align: middle; }
 .tableau thead th {
@@ -367,7 +368,7 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 }
 .pilule:hover { background: rgba(255, 255, 255, 0.6); color: var(--texte); }
 .pilule[aria-current="page"] { background: var(--surface); color: var(--texte); font-weight: 700; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12); }
-.pilule-inactive { color: var(--texte-4); font-weight: 500; }
+.pilule-inactive { color: var(--texte-3); font-weight: 400; text-decoration: line-through; text-decoration-color: var(--texte-4); }
 
 /* ---------- Accueil ---------- */
 .hero {

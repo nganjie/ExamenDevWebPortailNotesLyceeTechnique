@@ -23,11 +23,14 @@ function messageErreur(champ) {
         if (Number.isNaN(nombre)) {
             return "Saisissez un nombre.";
         }
-        if (champ.min !== "" && nombre < Number(champ.min)) {
-            return champ.dataset.messageBornes || "La valeur doit être au moins " + champ.min + ".";
+        // bornes : attributs min / max (champ number) ou data-min / data-max (champ texte)
+        const minimum = champ.min || champ.dataset.min || "";
+        const maximum = champ.max || champ.dataset.max || "";
+        if (minimum !== "" && nombre < Number(minimum)) {
+            return champ.dataset.messageBornes || "La valeur doit être au moins " + minimum + ".";
         }
-        if (champ.max !== "" && nombre > Number(champ.max)) {
-            return champ.dataset.messageBornes || "La valeur doit être au plus " + champ.max + ".";
+        if (maximum !== "" && nombre > Number(maximum)) {
+            return champ.dataset.messageBornes || "La valeur doit être au plus " + maximum + ".";
         }
     }
     if (champ.type === "date" && champ.dataset.dateFuture !== undefined) {

@@ -82,7 +82,7 @@
         <h2 id="titre-apercu">Aperçu</h2>
         <span class="texte-secondaire texte-petit">Les lignes à problème sont affichées en premier{% if resultats|length > apercu|length %} · {{ apercu|length }} premières lignes sur {{ resultats|length }}{% endif %}</span>
     </div>
-    <div class="tableau-conteneur">
+    <div class="tableau-conteneur" tabindex="0">
         <table class="tableau">
             <thead><tr><th scope="col" class="num">Ligne</th><th scope="col">Nom</th><th scope="col">Prénom</th><th scope="col">Naissance</th><th scope="col">Matricule</th><th scope="col">État</th></tr></thead>
             <tbody>

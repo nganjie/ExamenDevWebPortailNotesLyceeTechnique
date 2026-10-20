@@ -35,7 +35,7 @@
         <a class="bouton bouton-discret" href="{{ url_for('evaluations') }}">Toutes les évaluations{{ icone("fleche-droite", "icone-petite") }}</a>
     </div>
     {% if a_traiter %}
-    <div class="tableau-conteneur">
+    <div class="tableau-conteneur" tabindex="0">
         <table class="tableau">
             <thead>
                 <tr><th scope="col">Évaluation</th><th scope="col">Date</th><th scope="col">Notes saisies</th><th scope="col">Statut</th><th scope="col" class="actions">Action</th></tr>
