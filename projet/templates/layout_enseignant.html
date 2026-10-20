@@ -9,7 +9,10 @@
     {"endpoint": "liste_classes", "libelle": "Listes de classe", "icone": "utilisateurs", "actifs": ["liste_classes", "liste_classe", "fiche_eleve"]},
     {"endpoint": "page_statistiques", "libelle": "Statistiques", "icone": "barres", "actifs": ["page_statistiques"]},
 ] %}
-{% set menu_administration = [] %}
+{% set menu_administration = [
+    {"endpoint": "admin_classes", "libelle": "Classes", "icone": "batiment", "actifs": ["admin_classes", "modifier_classe"]},
+    {"endpoint": "admin_eleves", "libelle": "Élèves", "icone": "utilisateur-plus", "actifs": ["admin_eleves", "modifier_eleve"]},
+] %}
 <div class="espace">
     <div class="barre-mobile">
         <a class="logo" href="{{ url_for('tableau_de_bord') }}">

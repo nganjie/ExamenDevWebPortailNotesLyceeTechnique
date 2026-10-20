@@ -1,0 +1,13 @@
+{# Champs du formulaire d'une classe (création et modification) #}
+{% from "macros.html" import champ, champ_liste with context %}
+{{ champ("nom", "Nom de la classe", valeur=valeurs.get("nom", ""), erreur=erreurs.get("nom"), obligatoire=True,
+         attributs={"maxlength": "40", "placeholder": "ex. 2e année F3"}) }}
+<div class="grille-champs">
+    {{ champ_liste("niveau", "Niveau", [(1, "1re année"), (2, "2e année"), (3, "3e année"), (4, "4e année")],
+                   valeurs.get("niveau", ""), erreurs.get("niveau"), obligatoire=True, vide="Choisir") }}
+    {{ champ("effectif_max", "Effectif maximal", type="number", valeur=valeurs.get("effectif_max", 35), erreur=erreurs.get("effectif_max"),
+             obligatoire=True, attributs={"min": "1", "max": "60", "data-message-bornes": "L'effectif maximal va de 1 à 60."}) }}
+</div>
+{{ champ_liste("filiere", "Filière", filieres.keys()|zip(filieres.items()|map("join", " — ")), valeurs.get("filiere", ""), erreurs.get("filiere"), obligatoire=True, vide="Choisir une filière") }}
+{{ champ_liste("professeur_principal_id", "Professeur principal", enseignants|map(attribute="id")|zip(enseignants|map(attribute="nom")),
+               valeurs.get("professeur_principal_id") or "", erreurs.get("professeur_principal_id"), vide="— Aucun —") }}

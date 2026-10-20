@@ -575,3 +575,18 @@ input.case-note {
 .teinte-4 { background: #8DADF4; color: var(--encre); }
 .pastille-couleur { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
 .tableau-chaleur td { padding: 6px 8px; }
+
+/* ---------- Administration ---------- */
+.formulaire-etroit { max-width: 560px; }
+.carte-code {
+    display: flex; flex-direction: column; gap: 8px; padding: 18px;
+    border: 1px solid #A7F3D0; border-radius: var(--rayon-grand); background: var(--vert-clair); color: var(--vert-fonce);
+}
+.code-acces { font-family: var(--police-titre); font-weight: 800; font-size: 32px; letter-spacing: 0.12em; color: #064E3B; }
+.badge-bouton {
+    min-height: 32px; padding: 3px 12px; border: 0; border-radius: 999px; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+}
+.badge-bouton:hover { filter: brightness(0.96); text-decoration: underline; }
+.lien-encadre { text-decoration: none; }
+.sans-retour { white-space: nowrap; }

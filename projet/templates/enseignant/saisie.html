@@ -53,7 +53,7 @@
                     <tr{% if erreur %} class="ligne-en-erreur"{% endif %}>
                         <td class="num texte-secondaire">{{ loop.index }}</td>
                         <th scope="row">{% if eleve.note is none and saisie_ouverte %}<label for="note-{{ eleve.id }}">{{ eleve.nom }} {{ eleve.prenom }}</label>{% else %}{{ eleve.nom }} {{ eleve.prenom }}{% endif %}</th>
-                        <td class="chiffres texte-secondaire">{{ eleve.matricule }}</td>
+                        <td class="chiffres texte-secondaire sans-retour">{{ eleve.matricule }}</td>
                         <td>
                             {% if eleve.note is not none %}
                             <span class="ligne">

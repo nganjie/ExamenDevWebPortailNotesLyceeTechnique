@@ -1,0 +1,22 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, csrf with context %}
+
+{% block titre %}Modifier {{ classe.nom }}{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <a class="fil" href="{{ url_for('admin_classes') }}">{{ icone("fleche-gauche", "icone-petite") }}Toutes les classes</a>
+        <h1>Modifier la classe {{ classe.nom }}</h1>
+        <span class="texte-secondaire texte-petit">{{ effectif }} élève{{ "s" if effectif > 1 }} inscrit{{ "s" if effectif > 1 }}</span>
+    </div>
+</div>
+<form class="carte formulaire formulaire-etroit" method="post" action="{{ url_for('modifier_classe', classe_id=classe.id) }}" data-valider novalidate>
+    {{ csrf() }}
+    {% include "admin/_champs_classe.html" %}
+    <div class="ligne">
+        <button type="submit" class="bouton bouton-principal">{{ icone("coche") }}Enregistrer</button>
+        <a class="bouton" href="{{ url_for('admin_classes') }}">Annuler</a>
+    </div>
+</form>
+{% endblock %}

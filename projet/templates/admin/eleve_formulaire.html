@@ -1,0 +1,31 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, csrf with context %}
+
+{% block titre %}Modifier {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <a class="fil" href="{{ url_for('admin_eleves', classe=eleve.classe_id) }}">{{ icone("fleche-gauche", "icone-petite") }}{{ eleve.classe_nom }}</a>
+        <h1>Modifier {{ eleve.nom }} {{ eleve.prenom }}</h1>
+        <span class="texte-secondaire texte-petit">Matricule {{ eleve.matricule }} (ne change pas)</span>
+    </div>
+</div>
+<div class="disposition">
+    <form class="carte formulaire zone-laterale" method="post" action="{{ url_for('modifier_eleve', eleve_id=eleve.id) }}" data-valider novalidate>
+        {{ csrf() }}
+        {% include "admin/_champs_eleve.html" %}
+        <div class="ligne">
+            <button type="submit" class="bouton bouton-principal">{{ icone("coche") }}Enregistrer</button>
+            <a class="bouton" href="{{ url_for('admin_eleves', classe=eleve.classe_id) }}">Annuler</a>
+        </div>
+    </form>
+    <section class="carte pile zone-principale" aria-labelledby="titre-danger">
+        <h2 id="titre-danger">Supprimer l'élève</h2>
+        <p class="texte-secondaire">La suppression efface aussi toutes ses notes. Elle est définitive.</p>
+        <form method="post" action="{{ url_for('supprimer_eleve', eleve_id=eleve.id) }}" data-confirmer="Supprimer définitivement {{ eleve.nom }} {{ eleve.prenom }} et toutes ses notes ?">
+            {{ csrf() }}<button type="submit" class="bouton bouton-danger">{{ icone("croix") }}Supprimer l'élève</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, csrf, champ, champ_liste, paginer with context %}
+
+{% block titre %}Élèves{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <a class="fil" href="{{ url_for('admin_classes') }}">{{ icone("fleche-gauche", "icone-petite") }}Toutes les classes</a>
+        <h1>Élèves{% if classe_choisie %} · {{ classe_choisie.nom }}{% endif %}</h1>
+        {% if classe_choisie %}<span class="texte-secondaire texte-petit">{{ classe_choisie.effectif }} élèves inscrits · effectif maximal {{ classe_choisie.effectif_max }} · {{ classe_choisie.effectif_max - classe_choisie.effectif }} places libres</span>{% endif %}
+    </div>
+    <div class="ligne">
+        <a class="bouton" href="{{ url_for('exporter_eleves', classe=filtre_classe) if filtre_classe else url_for('exporter_eleves') }}">{{ icone("telecharger") }}Exporter (CSV)</a>
+        <a class="bouton bouton-principal" href="#ajout-eleve">{{ icone("utilisateur-plus") }}Ajouter un élève</a>
+    </div>
+</div>
+
+<div class="disposition">
+    <section class="carte carte-sans-marge zone-principale" aria-labelledby="titre-liste">
+        <h2 id="titre-liste" class="visuellement-cache">Liste des élèves</h2>
+        <form class="barre-filtres barre-filtres-integree" method="get" action="{{ url_for('admin_eleves') }}" role="search">
+            <div class="champ">
+                <label for="filtre-q">Rechercher</label>
+                <input id="filtre-q" name="q" type="search" value="{{ recherche }}" placeholder="Nom, prénom ou matricule">
+            </div>
+            {{ champ_liste("classe", "Classe", classes|map(attribute="id")|zip(classes|map(attribute="nom")), filtre_classe or "", vide="Toutes les classes", prefixe="filtre") }}
+            <button type="submit" class="bouton">{{ icone("recherche") }}Rechercher</button>
+        </form>
+        {% if eleves %}
+        <div class="tableau-conteneur">
+            <table class="tableau">
+                <thead>
+                    <tr><th scope="col">Matricule</th><th scope="col">Nom et prénom</th><th scope="col">Né(e) le</th><th scope="col">Code d'accès</th><th scope="col" class="actions">Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for eleve in eleves %}
+                    <tr>
+                        <td class="chiffres texte-secondaire sans-retour">{{ eleve.matricule }}</td>
+                        <th scope="row">{{ eleve.nom }} {{ eleve.prenom }}{% if not filtre_classe %}<span class="sous-texte">{{ eleve.classe_nom }}</span>{% endif %}</th>
+                        <td class="chiffres">{{ eleve.date_naissance|date_fr }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('basculer_code_remis', eleve_id=eleve.id) }}" class="formulaire-en-ligne">
+                                {{ csrf() }}<input type="hidden" name="retour" value="{{ request.full_path }}">
+                                <button type="submit" class="badge-bouton {{ 'badge-vert' if eleve.code_remis else 'badge-ambre' }}" title="{{ 'Marquer à remettre' if eleve.code_remis else 'Marquer comme remis' }}">{{ "Remis" if eleve.code_remis else "À remettre" }}</button>
+                            </form>
+                        </td>
+                        <td class="actions">
+                            <a class="bouton bouton-discret" href="{{ url_for('modifier_eleve', eleve_id=eleve.id) }}" aria-label="Modifier {{ eleve.nom }} {{ eleve.prenom }}">{{ icone("crayon", "icone-petite") }}Modifier</a>
+                            <form method="post" action="{{ url_for('nouveau_code', eleve_id=eleve.id) }}" class="formulaire-en-ligne" data-confirmer="Générer un nouveau code pour {{ eleve.nom }} {{ eleve.prenom }} ? L'ancien ne fonctionnera plus.">
+                                {{ csrf() }}<button type="submit" class="bouton bouton-discret" aria-label="Nouveau code pour {{ eleve.nom }} {{ eleve.prenom }}">{{ icone("cle", "icone-petite") }}Nouveau code</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {{ paginer(pagination, "admin_eleves", "élèves") }}
+        {% else %}
+        <p class="carte-vide">{{ icone("info") }}Aucun élève ne correspond à cette recherche.</p>
+        {% endif %}
+    </section>
+
+    <aside class="zone-laterale pile">
+        {% if code_a_afficher %}
+        <div class="carte-code" role="status">
+            <span class="ligne gras">{{ icone("succes") }}Élève : {{ code_a_afficher.eleve }}</span>
+            <span class="texte-petit">Matricule {{ code_a_afficher.matricule }} · code d'accès :</span>
+            <span class="code-acces">{{ code_a_afficher.code[:3] }} {{ code_a_afficher.code[3:] }}</span>
+            <span class="texte-tres-petit">Notez-le maintenant : seule l'empreinte du code est enregistrée, il ne sera plus affiché.</span>
+        </div>
+        {% endif %}
+        <form id="ajout-eleve" class="carte formulaire" method="post" action="{{ url_for('admin_eleves', classe=filtre_classe) if filtre_classe else url_for('admin_eleves') }}" data-valider novalidate>
+            {{ csrf() }}
+            <h2>Ajouter un élève</h2>
+            {% include "admin/_champs_eleve.html" %}
+            {{ champ("matricule", "Matricule", valeur=valeurs.get("matricule", ""), erreur=erreurs.get("matricule"),
+                     aide="Facultatif : généré automatiquement s'il est vide.",
+                     attributs={"pattern": "LT[0-9]{2}-F[0-9]-[0-9]{4}", "maxlength": "12", "placeholder": "Laisser vide pour le générer",
+                                "data-message-motif": "Format attendu : LT25-F3-0017."}) }}
+            <button type="submit" class="bouton bouton-principal bouton-grand">{{ icone("cle") }}Ajouter et générer le code</button>
+        </form>
+        <a class="encadre encadre-info lien-encadre" href="#ajout-eleve">{{ icone("televerser") }}<span>Pour inscrire toute une classe d'un coup, utilisez l'import de fichier (CSV, XLSX…).</span></a>
+    </aside>
+</div>
+{% endblock %}

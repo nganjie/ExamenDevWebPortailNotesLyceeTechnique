@@ -1,0 +1,69 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, csrf, jauge with context %}
+
+{% block titre %}Classes{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <span class="fil">Administration · Année scolaire {{ annee_scolaire }}</span>
+        <h1>Classes</h1>
+    </div>
+    <div class="ligne">
+        <a class="bouton" href="{{ url_for('admin_eleves') }}">{{ icone("utilisateurs") }}Élèves</a>
+        <a class="bouton bouton-principal" href="#nouvelle-classe">{{ icone("plus") }}Nouvelle classe</a>
+    </div>
+</div>
+
+<section class="indicateurs" aria-label="Résumé">
+    <div class="indicateur"><span class="indicateur-libelle">Classes</span><span class="indicateur-valeur">{{ classes|length }}</span></div>
+    <div class="indicateur"><span class="indicateur-libelle">Élèves inscrits</span><span class="indicateur-valeur">{{ classes|sum(attribute="effectif") }}</span></div>
+    <div class="indicateur"><span class="indicateur-libelle">Places disponibles</span><span class="indicateur-valeur">{{ classes|sum(attribute="effectif_max") - classes|sum(attribute="effectif") }}</span></div>
+</section>
+
+<div class="disposition">
+    <section class="zone-principale grille-cartes" aria-label="Liste des classes">
+        {% for classe in classes %}
+        <article class="carte pile">
+            <div class="ligne-espacee">
+                <div class="pile-serree">
+                    <h2>{{ classe.nom }}</h2>
+                    <span class="texte-secondaire texte-petit">{{ filieres.get(classe.filiere, classe.filiere) }}</span>
+                </div>
+                <span class="badge badge-bleu">{{ classe.filiere }}</span>
+            </div>
+            <div class="pile-serree">
+                <div class="ligne-espacee texte-petit"><span class="texte-secondaire">Effectif</span><span class="gras">{{ classe.effectif }} / {{ classe.effectif_max }}</span></div>
+                {{ jauge(classe.effectif, classe.effectif_max, "jauge-rouge" if classe.effectif >= classe.effectif_max else "") }}
+            </div>
+            <dl class="liste-definitions">
+                <dt>Prof. principal</dt><dd>{{ classe.professeur_principal or "—" }}</dd>
+                <dt>Niveau</dt><dd>{{ classe.niveau }}{{ "re" if classe.niveau == 1 else "e" }} année</dd>
+            </dl>
+            <div class="ligne">
+                <a class="bouton" href="{{ url_for('admin_eleves', classe=classe.id) }}">{{ icone("utilisateurs", "icone-petite") }}Élèves</a>
+                <a class="bouton bouton-discret" href="{{ url_for('modifier_classe', classe_id=classe.id) }}">{{ icone("crayon", "icone-petite") }}Modifier</a>
+                {% if classe.effectif == 0 %}
+                <form method="post" action="{{ url_for('supprimer_classe', classe_id=classe.id) }}" class="formulaire-en-ligne" data-confirmer="Supprimer la classe {{ classe.nom }} ?">
+                    {{ csrf() }}<button type="submit" class="bouton bouton-danger">{{ icone("croix", "icone-petite") }}Supprimer</button>
+                </form>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+
+    <aside class="zone-laterale pile">
+        <form id="nouvelle-classe" class="carte formulaire" method="post" action="{{ url_for('admin_classes') }}" data-valider novalidate>
+            {{ csrf() }}
+            <div class="pile-serree">
+                <h2>Nouvelle classe</h2>
+                <p class="texte-secondaire texte-petit">Les champs marqués <span class="champ-obligatoire">*</span> sont obligatoires.</p>
+            </div>
+            {% include "admin/_champs_classe.html" %}
+            <button type="submit" class="bouton bouton-principal bouton-grand">{{ icone("plus") }}Créer la classe</button>
+            <p class="texte-tres-petit texte-secondaire">Une classe qui contient des élèves ne peut pas être supprimée ; son effectif maximal ne peut pas descendre sous l'effectif actuel.</p>
+        </form>
+    </aside>
+</div>
+{% endblock %}

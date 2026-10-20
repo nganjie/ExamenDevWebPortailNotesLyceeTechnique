@@ -3,6 +3,8 @@
 Lancement :  python app.py   puis ouvrir http://127.0.0.1:5000
 """
 
+import csv
+import io
 import os
 import re
 import secrets
@@ -11,9 +13,9 @@ import time
 from datetime import date
 from functools import wraps
 
-from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
-                   request, session, url_for)
-from werkzeug.security import check_password_hash
+from flask import (Flask, Response, abort, flash, g, jsonify, redirect,
+                   render_template, request, session, url_for)
+from werkzeug.security import check_password_hash, generate_password_hash
 
 import calculs
 
@@ -30,6 +32,7 @@ app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024  # fichiers envoyés : 2 Mo a
 
 NOM_LYCEE = "Lycée technique"
 ANNEE_SCOLAIRE = "2026-2027"
+ANNEE_RENTREE = 2026
 FILIERES = {
     "F1": "Construction mécanique",
     "F2": "Électronique",
@@ -118,6 +121,14 @@ def associer(premiere, seconde):
 def libelle_sequence(numero):
     """« Séquence 3 »."""
     return f"Séquence {numero}"
+
+
+@app.template_filter("libelle_classe")
+def libelle_classe(classe):
+    """« 2e année F3 (30 / 35) » pour les listes déroulantes de classes."""
+    if "effectif" in classe.keys():
+        return f"{classe['nom']} ({classe['effectif']} / {classe['effectif_max']})"
+    return classe["nom"]
 
 
 @app.template_filter("date_fr")
@@ -893,6 +904,302 @@ def api_moyennes_classe(classe_id):
                     "moyenne": e["moyenne"], "rang": e["rang"], "ex_aequo": e["ex_aequo"]}
                    for e in synthese["eleves"]],
     })
+
+
+# --- Administration : classes et élèves ----------------------------------------
+
+def generer_code():
+    """Code d'accès aléatoire de 6 chiffres (module secrets, imprévisible)."""
+    return f"{secrets.randbelow(1_000_000):06d}"
+
+
+def generer_matricule(classe):
+    """Matricule suivant pour une classe : LT + année d'entrée + filière + numéro (LT25-F3-0031)."""
+    annee_entree = ANNEE_RENTREE - (classe["niveau"] - 1)
+    prefixe = f"LT{annee_entree % 100:02d}-{classe['filiere']}-"
+    dernier = get_db().execute("SELECT MAX(matricule) AS m FROM eleves WHERE matricule LIKE ?",
+                               (prefixe + "%",)).fetchone()["m"]
+    numero = int(dernier[-4:]) + 1 if dernier else 1
+    return f"{prefixe}{numero:04d}"
+
+
+def effectif(classe_id):
+    """Nombre d'élèves inscrits dans une classe."""
+    return get_db().execute("SELECT COUNT(*) AS n FROM eleves WHERE classe_id = ?",
+                            (classe_id,)).fetchone()["n"]
+
+
+def verifier_classe(formulaire, classe=None):
+    """Vérifie le formulaire d'une classe ; renvoie (valeurs, erreurs)."""
+    db = get_db()
+    valeurs = {
+        "nom": " ".join(formulaire.get("nom", "").split()),
+        "niveau": lire_entier(formulaire.get("niveau")),
+        "filiere": formulaire.get("filiere", ""),
+        "effectif_max": lire_entier(formulaire.get("effectif_max")),
+        "professeur_principal_id": lire_entier(formulaire.get("professeur_principal_id")),
+    }
+    erreurs = {}
+    if not 3 <= len(valeurs["nom"]) <= 40:
+        erreurs["nom"] = "Le nom doit faire entre 3 et 40 caractères."
+    else:
+        doublon = db.execute("SELECT id FROM classes WHERE nom = ? AND id != ?",
+                             (valeurs["nom"], classe["id"] if classe else 0)).fetchone()
+        if doublon:
+            erreurs["nom"] = "Une classe porte déjà ce nom."
+    if valeurs["niveau"] not in (1, 2, 3, 4):
+        erreurs["niveau"] = "Choisissez un niveau de 1 à 4."
+    if valeurs["filiere"] not in FILIERES:
+        erreurs["filiere"] = "Choisissez une filière."
+    if valeurs["effectif_max"] is None or not 1 <= valeurs["effectif_max"] <= 60:
+        erreurs["effectif_max"] = "L'effectif maximal va de 1 à 60."
+    elif classe and valeurs["effectif_max"] < effectif(classe["id"]):
+        erreurs["effectif_max"] = f"La classe compte déjà {effectif(classe['id'])} élèves."
+    if valeurs["professeur_principal_id"] is not None and not db.execute(
+            "SELECT id FROM enseignants WHERE id = ?", (valeurs["professeur_principal_id"],)).fetchone():
+        erreurs["professeur_principal_id"] = "Enseignant inconnu."
+    return valeurs, erreurs
+
+
+@app.route("/admin/classes", methods=["GET", "POST"])
+@admin_requis
+def admin_classes():
+    """Liste des classes et création d'une classe."""
+    db = get_db()
+    valeurs, erreurs = {}, {}
+    if request.method == "POST":
+        valeurs, erreurs = verifier_classe(request.form)
+        if not erreurs:
+            with db:
+                db.execute("INSERT INTO classes (nom, niveau, filiere, effectif_max, professeur_principal_id) "
+                           "VALUES (:nom, :niveau, :filiere, :effectif_max, :professeur_principal_id)", valeurs)
+            flash(f"Classe « {valeurs['nom']} » créée.", "succes")
+            return redirect(url_for("admin_classes"))
+        flash("La classe n'a pas été créée : corrigez les champs signalés.", "erreur")
+    classes = db.execute(
+        "SELECT c.*, en.nom AS professeur_principal, "
+        "(SELECT COUNT(*) FROM eleves e WHERE e.classe_id = c.id) AS effectif "
+        "FROM classes c LEFT JOIN enseignants en ON en.id = c.professeur_principal_id "
+        "ORDER BY c.niveau, c.nom").fetchall()
+    enseignants = db.execute("SELECT id, nom FROM enseignants ORDER BY nom").fetchall()
+    return render_template("admin/classes.html", classes=classes, enseignants=enseignants,
+                           valeurs=valeurs, erreurs=erreurs), 400 if erreurs else 200
+
+
+@app.route("/admin/classes/<int:classe_id>/modifier", methods=["GET", "POST"])
+@admin_requis
+def modifier_classe(classe_id):
+    """Modification d'une classe."""
+    classe = charger_classe(classe_id)
+    valeurs, erreurs = dict(classe), {}
+    if request.method == "POST":
+        valeurs, erreurs = verifier_classe(request.form, classe)
+        if not erreurs:
+            valeurs["id"] = classe_id
+            with get_db() as db:
+                db.execute("UPDATE classes SET nom = :nom, niveau = :niveau, filiere = :filiere, "
+                           "effectif_max = :effectif_max, professeur_principal_id = :professeur_principal_id "
+                           "WHERE id = :id", valeurs)
+            flash("Classe modifiée.", "succes")
+            return redirect(url_for("admin_classes"))
+        flash("La classe n'a pas été modifiée : corrigez les champs signalés.", "erreur")
+    enseignants = get_db().execute("SELECT id, nom FROM enseignants ORDER BY nom").fetchall()
+    return render_template("admin/classe_formulaire.html", classe=classe, valeurs=valeurs,
+                           erreurs=erreurs, enseignants=enseignants,
+                           effectif=effectif(classe_id)), 400 if erreurs else 200
+
+
+@app.route("/admin/classes/<int:classe_id>/supprimer", methods=["POST"])
+@admin_requis
+def supprimer_classe(classe_id):
+    """Supprime une classe qui ne contient aucun élève."""
+    classe = charger_classe(classe_id)
+    if effectif(classe_id) > 0:
+        flash("Impossible de supprimer une classe qui contient des élèves.", "erreur")
+    else:
+        with get_db() as db:
+            db.execute("DELETE FROM classes WHERE id = ?", (classe_id,))
+        flash(f"Classe « {classe['nom']} » supprimée.", "succes")
+    return redirect(url_for("admin_classes"))
+
+
+def verifier_eleve(formulaire, eleve=None):
+    """Vérifie le formulaire d'un élève ; renvoie (valeurs, erreurs)."""
+    db = get_db()
+    valeurs = {
+        "nom": " ".join(formulaire.get("nom", "").split()).upper(),
+        "prenom": " ".join(formulaire.get("prenom", "").split()),
+        "date_naissance": lire_date(formulaire.get("date_naissance")),
+        "classe_id": lire_entier(formulaire.get("classe_id")),
+        "matricule": formulaire.get("matricule", "").strip().upper(),
+    }
+    erreurs = {}
+    if not 2 <= len(valeurs["nom"]) <= 40:
+        erreurs["nom"] = "Le nom doit faire entre 2 et 40 caractères."
+    if not 2 <= len(valeurs["prenom"]) <= 40:
+        erreurs["prenom"] = "Le prénom doit faire entre 2 et 40 caractères."
+    if valeurs["date_naissance"] is None:
+        erreurs["date_naissance"] = "Saisissez une date valide."
+    else:
+        age = (date.today() - date.fromisoformat(valeurs["date_naissance"])).days / 365.25
+        if not 10 <= age <= 30:
+            erreurs["date_naissance"] = "L'élève doit avoir entre 10 et 30 ans."
+    classe = db.execute("SELECT * FROM classes WHERE id = ?", (valeurs["classe_id"],)).fetchone()
+    if classe is None:
+        erreurs["classe_id"] = "Choisissez une classe."
+    elif (eleve is None or eleve["classe_id"] != classe["id"]) and effectif(classe["id"]) >= classe["effectif_max"]:
+        erreurs["classe_id"] = f"La classe {classe['nom']} est pleine ({classe['effectif_max']} élèves)."
+    if eleve is None and valeurs["matricule"]:
+        if not MOTIF_MATRICULE.match(valeurs["matricule"]):
+            erreurs["matricule"] = "Format attendu : LT25-F3-0017."
+        elif db.execute("SELECT id FROM eleves WHERE matricule = ?", (valeurs["matricule"],)).fetchone():
+            erreurs["matricule"] = "Ce matricule est déjà utilisé."
+    return valeurs, erreurs, classe
+
+
+def montrer_code_une_fois(eleve_nom, matricule, code):
+    """Garde le code en clair dans la session pour l'afficher une seule fois sur la page suivante."""
+    session["code_a_afficher"] = {"eleve": eleve_nom, "matricule": matricule, "code": code}
+
+
+@app.route("/admin/eleves", methods=["GET", "POST"])
+@admin_requis
+def admin_eleves():
+    """Liste des élèves (filtre, recherche, pages) et ajout d'un élève."""
+    db = get_db()
+    classes = db.execute(
+        "SELECT c.*, (SELECT COUNT(*) FROM eleves e WHERE e.classe_id = c.id) AS effectif "
+        "FROM classes c ORDER BY niveau, nom").fetchall()
+    filtre_classe = lire_entier(request.args.get("classe"))
+    recherche = request.args.get("q", "").strip()
+    valeurs, erreurs = {"classe_id": filtre_classe}, {}
+
+    if request.method == "POST":
+        valeurs, erreurs, classe = verifier_eleve(request.form)
+        if not erreurs:
+            valeurs["matricule"] = valeurs["matricule"] or generer_matricule(classe)
+            code = generer_code()
+            try:
+                with db:
+                    db.execute(
+                        "INSERT INTO eleves (matricule, nom, prenom, classe_id, date_naissance, code_empreinte) "
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                        (valeurs["matricule"], valeurs["nom"], valeurs["prenom"], valeurs["classe_id"],
+                         valeurs["date_naissance"], generate_password_hash(code)))
+                montrer_code_une_fois(f"{valeurs['nom']} {valeurs['prenom']}", valeurs["matricule"], code)
+                flash(f"Élève {valeurs['nom']} {valeurs['prenom']} ajouté en {classe['nom']}.", "succes")
+                return redirect(url_for("admin_eleves", classe=valeurs["classe_id"]))
+            except sqlite3.IntegrityError:
+                erreurs["matricule"] = "Ce matricule est déjà utilisé."
+        flash("L'élève n'a pas été ajouté : corrigez les champs signalés.", "erreur")
+
+    # La clause WHERE n'assemble que des morceaux écrits ici ; les valeurs restent des paramètres « ? »
+    conditions, parametres = "WHERE 1 = 1", []
+    if filtre_classe:
+        conditions += " AND e.classe_id = ?"
+        parametres.append(filtre_classe)
+    if recherche:
+        conditions += " AND (e.nom LIKE ? OR e.prenom LIKE ? OR e.matricule LIKE ?)"
+        parametres += [f"%{recherche}%"] * 3
+    total = db.execute(f"SELECT COUNT(*) AS n FROM eleves e {conditions}", parametres).fetchone()["n"]
+    pagination = paginer(total)
+    eleves = db.execute(
+        f"SELECT e.*, c.nom AS classe_nom FROM eleves e JOIN classes c ON c.id = e.classe_id {conditions} "
+        "ORDER BY c.niveau, c.nom, e.nom, e.prenom LIMIT ? OFFSET ?",
+        parametres + [LIGNES_PAR_PAGE, pagination["debut"]]).fetchall()
+    return render_template(
+        "admin/eleves.html", eleves=eleves, classes=classes, filtre_classe=filtre_classe,
+        recherche=recherche, pagination=pagination, valeurs=valeurs, erreurs=erreurs,
+        code_a_afficher=session.pop("code_a_afficher", None),
+        classe_choisie=next((c for c in classes if c["id"] == filtre_classe), None),
+    ), 400 if erreurs else 200
+
+
+def charger_eleve(eleve_id):
+    """Élève demandé ou erreur 404."""
+    eleve = get_db().execute("SELECT e.*, c.nom AS classe_nom FROM eleves e "
+                             "JOIN classes c ON c.id = e.classe_id WHERE e.id = ?", (eleve_id,)).fetchone()
+    if eleve is None:
+        abort(404)
+    return eleve
+
+
+@app.route("/admin/eleves/<int:eleve_id>/modifier", methods=["GET", "POST"])
+@admin_requis
+def modifier_eleve(eleve_id):
+    """Modification d'un élève (le matricule ne change pas)."""
+    eleve = charger_eleve(eleve_id)
+    valeurs, erreurs = dict(eleve), {}
+    if request.method == "POST":
+        valeurs, erreurs, _ = verifier_eleve(request.form, eleve)
+        if not erreurs:
+            with get_db() as db:
+                db.execute("UPDATE eleves SET nom = ?, prenom = ?, date_naissance = ?, classe_id = ? WHERE id = ?",
+                           (valeurs["nom"], valeurs["prenom"], valeurs["date_naissance"],
+                            valeurs["classe_id"], eleve_id))
+            flash("Élève modifié.", "succes")
+            return redirect(url_for("admin_eleves", classe=valeurs["classe_id"]))
+        flash("L'élève n'a pas été modifié : corrigez les champs signalés.", "erreur")
+    classes = get_db().execute("SELECT * FROM classes ORDER BY niveau, nom").fetchall()
+    return render_template("admin/eleve_formulaire.html", eleve=eleve, valeurs=valeurs,
+                           erreurs=erreurs, classes=classes), 400 if erreurs else 200
+
+
+@app.route("/admin/eleves/<int:eleve_id>/nouveau-code", methods=["POST"])
+@admin_requis
+def nouveau_code(eleve_id):
+    """Génère un nouveau code d'accès ; l'ancien ne fonctionne plus."""
+    eleve = charger_eleve(eleve_id)
+    code = generer_code()
+    with get_db() as db:
+        db.execute("UPDATE eleves SET code_empreinte = ?, code_remis = 0 WHERE id = ?",
+                   (generate_password_hash(code), eleve_id))
+    montrer_code_une_fois(f"{eleve['nom']} {eleve['prenom']}", eleve["matricule"], code)
+    flash("Nouveau code d'accès généré : l'ancien ne fonctionne plus.", "succes")
+    return redirect(url_for("admin_eleves", classe=eleve["classe_id"]))
+
+
+@app.route("/admin/eleves/<int:eleve_id>/code-remis", methods=["POST"])
+@admin_requis
+def basculer_code_remis(eleve_id):
+    """Indique que le code a été remis à l'élève (ou l'inverse)."""
+    eleve = charger_eleve(eleve_id)
+    with get_db() as db:
+        db.execute("UPDATE eleves SET code_remis = 1 - code_remis WHERE id = ?", (eleve_id,))
+    return redirect(adresse_de_retour(url_for("admin_eleves", classe=eleve["classe_id"])))
+
+
+@app.route("/admin/eleves/<int:eleve_id>/supprimer", methods=["POST"])
+@admin_requis
+def supprimer_eleve(eleve_id):
+    """Supprime un élève et ses notes."""
+    eleve = charger_eleve(eleve_id)
+    with get_db() as db:
+        db.execute("DELETE FROM eleves WHERE id = ?", (eleve_id,))
+    flash(f"Élève {eleve['nom']} {eleve['prenom']} supprimé, ainsi que ses notes.", "succes")
+    return redirect(url_for("admin_eleves", classe=eleve["classe_id"]))
+
+
+@app.route("/admin/eleves/export.csv")
+@admin_requis
+def exporter_eleves():
+    """Export CSV de la liste des élèves (séparateur ;, UTF-8 avec BOM pour Excel)."""
+    filtre_classe = lire_entier(request.args.get("classe"))
+    sql = ("SELECT e.matricule, e.nom, e.prenom, e.date_naissance, c.nom AS classe, e.code_remis "
+           "FROM eleves e JOIN classes c ON c.id = e.classe_id ")
+    parametres = ()
+    if filtre_classe:
+        sql += "WHERE e.classe_id = ? "
+        parametres = (filtre_classe,)
+    lignes = get_db().execute(sql + "ORDER BY c.niveau, c.nom, e.nom, e.prenom", parametres).fetchall()
+    tampon = io.StringIO()
+    ecrivain = csv.writer(tampon, delimiter=";")
+    ecrivain.writerow(["matricule", "nom", "prenom", "date_naissance", "classe", "code_remis"])
+    for ligne in lignes:
+        ecrivain.writerow([ligne["matricule"], ligne["nom"], ligne["prenom"], ligne["date_naissance"],
+                           ligne["classe"], "oui" if ligne["code_remis"] else "non"])
+    return Response("\ufeff" + tampon.getvalue(), mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=eleves.csv"})
 
 
 # --- Statistiques ----------------------------------------------------------------

@@ -1,0 +1,8 @@
+{# Champs du formulaire d'un élève (ajout et modification) #}
+{% from "macros.html" import champ, champ_liste with context %}
+<div class="grille-champs">
+    {{ champ("nom", "Nom", valeur=valeurs.get("nom", ""), erreur=erreurs.get("nom"), obligatoire=True, attributs={"maxlength": "40", "placeholder": "ex. MBARGA", "autocomplete": "off"}) }}
+    {{ champ("prenom", "Prénom", valeur=valeurs.get("prenom", ""), erreur=erreurs.get("prenom"), obligatoire=True, attributs={"maxlength": "40", "placeholder": "ex. Paul", "autocomplete": "off"}) }}
+</div>
+{{ champ("date_naissance", "Date de naissance", type="date", valeur=valeurs.get("date_naissance") or "", erreur=erreurs.get("date_naissance"), obligatoire=True) }}
+{{ champ_liste("classe_id", "Classe", classes|map(attribute="id")|zip(classes|map("libelle_classe")), valeurs.get("classe_id") or "", erreurs.get("classe_id"), obligatoire=True, vide="Choisir une classe") }}
