@@ -1,0 +1,16 @@
+{# Messages flash : catégories succes, erreur, info, avertissement #}
+{% from "macros.html" import icone with context %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="messages">
+    {% for categorie, message in messages %}
+    {% set icones = {"succes": "succes", "erreur": "alerte", "avertissement": "alerte"} %}
+    <li class="message message-{{ categorie }}" role="{{ 'alert' if categorie == 'erreur' else 'status' }}">
+        {{ icone(icones.get(categorie, "info")) }}
+        <span class="message-texte">{{ message }}</span>
+        <button type="button" class="message-fermer" aria-label="Fermer le message" data-fermer-message>{{ icone("croix", "icone-petite") }}</button>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}

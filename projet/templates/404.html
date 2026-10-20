@@ -1,11 +1,13 @@
 {% extends "base.html" %}
+{% from "macros.html" import icone with context %}
 
 {% block titre %}Page introuvable{% endblock %}
 
 {% block contenu %}
-<section class="erreur">
-    <h1>Page introuvable</h1>
-    <p>La page demandée n'existe pas ou a été déplacée.</p>
-    <p><a href="{{ url_for('accueil') }}">Retour à l'accueil</a></p>
+<section class="conteneur erreur-page" aria-labelledby="titre-erreur">
+    <span class="erreur-code">404</span>
+    <h1 id="titre-erreur">Page introuvable</h1>
+    <p class="texte-secondaire">La page demandée n'existe pas ou a été déplacée.</p>
+    <a class="bouton bouton-principal" href="{{ url_for('accueil') }}">{{ icone("accueil") }}Retour à l'accueil</a>
 </section>
 {% endblock %}

@@ -1,11 +1,83 @@
 {% extends "base.html" %}
+{% from "macros.html" import icone, csrf, champ with context %}
 
 {% block titre %}Accueil{% endblock %}
 
 {% block contenu %}
-<section class="bienvenue">
-    <h1>Bienvenue sur le portail de notes</h1>
-    <p>Les enseignants saisissent les notes, les élèves et les parents consultent le bulletin
-       avec le matricule et le code personnel.</p>
+<section class="conteneur hero" aria-labelledby="titre-accueil">
+    <div class="hero-texte">
+        <span class="pastille">Année scolaire {{ annee_scolaire }}</span>
+        <h1 id="titre-accueil">Les résultats scolaires, sans se déplacer au lycée.</h1>
+        <p class="hero-intro">Les enseignants saisissent les notes de chaque séquence. Élèves et parents consultent le bulletin avec le matricule et le code personnel remis par l'administration.</p>
+        <ul class="atouts">
+            <li><span class="atout-icone">{{ icone("bulletin") }}</span>Bulletin de séquence avec moyenne coefficientée</li>
+            <li><span class="atout-icone">{{ icone("trophee") }}</span>Rang dans la classe, ex æquo compris</li>
+            <li><span class="atout-icone">{{ icone("courbe") }}</span>Évolution des moyennes d'une séquence à l'autre</li>
+        </ul>
+    </div>
+
+    <div class="carte-connexion">
+        <div class="onglets" role="tablist" aria-label="Type de compte" data-onglets hidden>
+            <button type="button" class="onglet" role="tab" id="onglet-eleve" aria-controls="panneau-eleve" aria-selected="{{ 'false' if onglet == 'enseignant' else 'true' }}">Élève / parent</button>
+            <button type="button" class="onglet" role="tab" id="onglet-enseignant" aria-controls="panneau-enseignant" aria-selected="{{ 'true' if onglet == 'enseignant' else 'false' }}">Enseignant</button>
+        </div>
+
+        <section class="panneau" id="panneau-eleve" role="tabpanel" aria-labelledby="onglet-eleve">
+            <form class="formulaire" method="post" action="{{ url_for('connexion_eleve') }}" data-valider novalidate>
+                {{ csrf() }}
+                <div class="pile-serree">
+                    <h2>Consulter un bulletin</h2>
+                    <p class="texte-secondaire texte-petit">Saisissez les identifiants de l'élève.</p>
+                </div>
+                {{ champ("matricule", "Matricule", valeur=saisie.get("matricule", ""), obligatoire=True,
+                         attributs={"placeholder": "ex. LT25-F3-0017", "autocomplete": "username",
+                                    "pattern": "LT[0-9]{2}-F[0-9]-[0-9]{4}", "maxlength": "12", "autocapitalize": "characters",
+                                    "data-message-motif": "Format attendu : LT25-F3-0017 (4 chiffres à la fin)."}) }}
+                {{ champ("code", "Code d'accès personnel", type="password", obligatoire=True,
+                         attributs={"placeholder": "6 chiffres", "inputmode": "numeric", "autocomplete": "current-password",
+                                    "pattern": "[0-9]{6}", "maxlength": "6",
+                                    "data-message-motif": "Le code d'accès comporte 6 chiffres."}) }}
+                <button type="submit" class="bouton bouton-principal bouton-grand">{{ icone("bulletin") }}Voir le bulletin</button>
+                <p class="texte-secondaire texte-tres-petit">Code perdu ? Adressez-vous au secrétariat du lycée avec la carte scolaire de l'élève.</p>
+            </form>
+        </section>
+
+        <section class="panneau" id="panneau-enseignant" role="tabpanel" aria-labelledby="onglet-enseignant">
+            <form class="formulaire" method="post" action="{{ url_for('connexion_enseignant') }}" data-valider novalidate>
+                {{ csrf() }}
+                <div class="pile-serree">
+                    <h2>Espace enseignant</h2>
+                    <p class="texte-secondaire texte-petit">Saisie et correction des notes.</p>
+                </div>
+                {{ champ("login", "Identifiant", valeur=saisie.get("login", ""), obligatoire=True,
+                         attributs={"placeholder": "ex. p.atangana", "autocomplete": "username", "maxlength": "40"}) }}
+                {{ champ("mot_de_passe", "Mot de passe", type="password", obligatoire=True,
+                         attributs={"autocomplete": "current-password"}) }}
+                <button type="submit" class="bouton bouton-sombre bouton-grand">{{ icone("cadenas") }}Se connecter</button>
+                <p class="texte-secondaire texte-tres-petit">Accès réservé au personnel enseignant du lycée.</p>
+            </form>
+        </section>
+    </div>
+</section>
+
+<section id="aide" class="conteneur" aria-labelledby="titre-aide">
+    <h2 id="titre-aide" class="visuellement-cache">Comment consulter un bulletin</h2>
+    <div class="etapes">
+        <article class="carte etape">
+            <span class="etape-numero">1</span>
+            <h3>Récupérer ses identifiants</h3>
+            <p class="texte-secondaire">Le matricule figure sur la carte scolaire. Le code personnel est remis par l'administration.</p>
+        </article>
+        <article class="carte etape">
+            <span class="etape-numero">2</span>
+            <h3>Choisir la séquence</h3>
+            <p class="texte-secondaire">Six séquences dans l'année. Chaque bulletin est disponible dès que les notes sont saisies.</p>
+        </article>
+        <article class="carte etape">
+            <span class="etape-numero">3</span>
+            <h3>Suivre la progression</h3>
+            <p class="texte-secondaire">Le graphique compare la moyenne de l'élève à celle de sa classe.</p>
+        </article>
+    </div>
 </section>
 {% endblock %}

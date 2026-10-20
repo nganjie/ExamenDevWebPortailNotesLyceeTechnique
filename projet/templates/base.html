@@ -1,41 +1,56 @@
 <!DOCTYPE html>
+{% from "macros.html" import icone with context %}
 <html lang="fr">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block titre %}Portail de notes{% endblock %} — Lycée technique</title>
+    <title>{% block titre %}Accueil{% endblock %} · Portail de notes — {{ nom_lycee }}</title>
+    <meta name="description" content="Portail de notes du {{ nom_lycee }} : saisie des notes par les enseignants, bulletins consultables par les élèves et les parents.">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block styles %}{% endblock %}
 </head>
 <body>
+    <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+    {% block page %}
     <header class="entete">
-        <a class="logo" href="{{ url_for('accueil') }}">Portail de notes</a>
-        <nav aria-label="Navigation principale">
-            <ul class="menu">
-                <li><a href="{{ url_for('accueil') }}">Accueil</a></li>
-            </ul>
-        </nav>
+        <div class="conteneur entete-interieur">
+            <a class="logo" href="{{ url_for('accueil') }}">
+                <span class="logo-marque">{{ icone("ecole") }}</span>
+                <span class="logo-texte">
+                    <span class="logo-nom">Portail de notes</span>
+                    <span class="logo-sous-titre">{{ nom_lycee }}</span>
+                </span>
+            </a>
+            {% block entete_droite %}
+            <nav class="nav-principale" aria-label="Navigation principale">
+                <ul>
+                    <li><a href="{{ url_for('accueil') }}"{% if request.endpoint == 'accueil' %} aria-current="page"{% endif %}>{{ icone("accueil") }}Accueil</a></li>
+                    <li><a href="{{ url_for('accueil') }}#aide">{{ icone("aide") }}Aide</a></li>
+                </ul>
+            </nav>
+            {% endblock %}
+        </div>
     </header>
 
-    <main class="contenu">
-        {# Messages flash (succès, erreurs de saisie...) #}
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class="messages">
-                    {% for categorie, message in messages %}
-                        <li class="message message-{{ categorie }}">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-
+    <main id="contenu" class="principal">
+        <div class="conteneur">
+            <div class="zone-messages">{% include "_messages.html" %}</div>
+        </div>
         {% block contenu %}{% endblock %}
     </main>
 
     <footer class="pied">
-        <p>Lycée technique — Portail de notes</p>
+        <div class="conteneur pied-interieur">
+            <span>© {{ annee_courante }} {{ nom_lycee }} · Portail de notes</span>
+            <span>Projet 3 · Technologies Web et applications</span>
+        </div>
     </footer>
+    {% endblock %}
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

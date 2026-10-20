@@ -1,0 +1,31 @@
+{# macros.html : petits composants réutilisés par les gabarits #}
+
+{# Icône décorative tirée de static/images/icones.svg #}
+{% macro icone(nom, classe="") -%}
+<svg class="icone {{ classe }}" aria-hidden="true" focusable="false"><use href="{{ url_for('static', filename='images/icones.svg') }}#{{ nom }}"></use></svg>
+{%- endmacro %}
+
+{# Champ caché anti-falsification à placer dans chaque formulaire POST #}
+{% macro csrf() -%}
+<input type="hidden" name="jeton_csrf" value="{{ jeton_csrf() }}">
+{%- endmacro %}
+
+{# Champ de formulaire complet : libellé, saisie, aide et message d'erreur du serveur #}
+{% macro champ(nom, libelle, type="text", valeur="", erreur=None, aide=None, obligatoire=False, attributs={}) -%}
+<div class="champ">
+    <label for="champ-{{ nom }}">{{ libelle }}{% if obligatoire %} <span class="champ-obligatoire" aria-hidden="true">*</span>{% endif %}</label>
+    <input id="champ-{{ nom }}" name="{{ nom }}" type="{{ type }}" value="{{ valeur }}"
+        {%- if obligatoire %} required{% endif %}
+        {%- if erreur %} aria-invalid="true"{% endif %}
+        {%- if aide or erreur %} aria-describedby="{% if aide %}champ-{{ nom }}-aide {% endif %}champ-{{ nom }}-erreur"{% endif %}
+        {{- attributs|xmlattr }}>
+    {% if aide %}<span id="champ-{{ nom }}-aide" class="champ-aide">{{ aide }}</span>{% endif %}
+    <span id="champ-{{ nom }}-erreur" class="champ-erreur"{% if not erreur %} hidden{% endif %}>{{ icone("alerte", "icone-petite") }}<span class="champ-erreur-texte">{{ erreur or "" }}</span></span>
+</div>
+{%- endmacro %}
+
+{# Note sur 20 mise en forme (rouge sous la moyenne) #}
+{% macro badge_note(valeur) -%}
+{% if valeur is none %}<span class="note note-vide">—</span>
+{%- else %}<span class="note{% if valeur < 10 %} note-faible{% endif %}">{{ valeur|note }}</span>{% endif %}
+{%- endmacro %}

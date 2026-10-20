@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "macros.html" import icone with context %}
+
+{% block titre %}Erreur du serveur{% endblock %}
+
+{% block contenu %}
+<section class="conteneur erreur-page" aria-labelledby="titre-erreur">
+    <span class="erreur-code">500</span>
+    <h1 id="titre-erreur">Une erreur est survenue</h1>
+    <p class="texte-secondaire">Le serveur n'a pas pu traiter la demande. Réessayez dans un instant.</p>
+    <a class="bouton bouton-principal" href="{{ url_for('accueil') }}">{{ icone("accueil") }}Retour à l'accueil</a>
+</section>
+{% endblock %}
