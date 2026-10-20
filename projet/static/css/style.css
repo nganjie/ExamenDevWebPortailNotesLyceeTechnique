@@ -590,3 +590,35 @@ input.case-note {
 .badge-bouton:hover { filter: brightness(0.96); text-decoration: underline; }
 .lien-encadre { text-decoration: none; }
 .sans-retour { white-space: nowrap; }
+
+/* ---------- Import d'élèves ---------- */
+.etapes-import { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.etape-import { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border: 2px solid var(--bordure); border-radius: 12px; background: var(--surface); }
+.etape-marque {
+    width: 32px; height: 32px; border-radius: 999px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--fond-3); color: var(--texte-3); font-weight: 700; font-size: 14px;
+}
+.etape-courante { border-color: var(--bleu); }
+.etape-courante .etape-marque { background: var(--bleu); color: #FFFFFF; }
+.etape-faite .etape-marque { background: var(--vert); color: #FFFFFF; }
+.zone-depot {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    padding: 36px 20px; border: 2px dashed #94A3B8; border-radius: var(--rayon-grand);
+    background: var(--fond-2); text-align: center; cursor: pointer;
+}
+.zone-depot:hover, .zone-depot-active { border-color: var(--bleu); background: var(--bleu-clair); }
+.zone-depot-remplie { border-style: solid; border-color: var(--vert); }
+.zone-depot:focus-within { outline: 3px solid #93B4F5; outline-offset: 2px; }
+.zone-depot-icone { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bleu-clair); color: var(--bleu); }
+.lien-simule { color: var(--bleu); text-decoration: underline; }
+.fichier-choisi { color: var(--vert-fonce); font-size: 14px; }
+.indicateur-vert { background: var(--vert-clair); border-color: #A7F3D0; }
+.indicateur-ambre { background: var(--ambre-clair); border-color: #FDE68A; }
+.indicateur-rouge { background: var(--rouge-clair); border-color: #FECACA; }
+.ligne-doublon { background: #FFFBEB; }
+.resultat-import { align-items: center; padding: 32px 22px; }
+.rond-succes { width: 64px; height: 64px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: var(--vert-clair); color: var(--vert); }
+.ligne-centree { justify-content: center; }
+.code-tableau { letter-spacing: 0.1em; font-size: 17px; }
+.resultat-import .encadre { text-align: left; }

@@ -1,0 +1,6 @@
+Fichiers d'exemple pour tester l'import d'élèves (Administration > Importer des élèves).
+Le même contenu est fourni en CSV, XLSX et ODS : 10 élèves fictifs dont
+- 1 date invalide (31/02/2011), 1 prénom manquant -> erreurs ;
+- 1 matricule déjà utilisé (LT25-F3-0028) -> doublon ;
+- 7 lignes valides.
+Choisir une classe qui a assez de places (par ex. créer d'abord une classe « 1re année F3 »).

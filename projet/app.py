@@ -9,6 +9,7 @@ import os
 import re
 import secrets
 import sqlite3
+import tempfile
 import time
 from datetime import date
 from functools import wraps
@@ -18,6 +19,7 @@ from flask import (Flask, Response, abort, flash, g, jsonify, redirect,
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import calculs
+import importation
 
 # --- Configuration -----------------------------------------------------------
 
@@ -50,6 +52,10 @@ MOTIF_NOTE = re.compile(r"^[0-9]{1,2}([.,][0-9]{1,2})?$")
 ESSAIS_MAX = 5
 DUREE_BLOCAGE = 5 * 60  # secondes
 TENTATIVES = {}
+
+# Fichiers d'import gardés entre l'aperçu et l'import (noms aléatoires, supprimés ensuite)
+DOSSIER_IMPORTS = os.path.join(tempfile.gettempdir(), "portail_notes_imports")
+MOTIF_JETON = re.compile(r"^[0-9a-f]{32}$")
 
 
 # --- Base de données ---------------------------------------------------------
@@ -1202,6 +1208,187 @@ def exporter_eleves():
                     headers={"Content-Disposition": "attachment; filename=eleves.csv"})
 
 
+# --- Administration : import d'élèves depuis un fichier ----------------------------
+
+def chemin_import(jeton, suffixe):
+    """Chemin d'un fichier temporaire d'import (le jeton est vérifié pour éviter toute traversée)."""
+    if not MOTIF_JETON.match(jeton or ""):
+        abort(400)
+    os.makedirs(DOSSIER_IMPORTS, exist_ok=True)
+    return os.path.join(DOSSIER_IMPORTS, f"{jeton}{suffixe}")
+
+
+def classes_avec_places():
+    """Classes avec leur effectif, pour la liste déroulante de destination."""
+    return get_db().execute(
+        "SELECT c.*, (SELECT COUNT(*) FROM eleves e WHERE e.classe_id = c.id) AS effectif "
+        "FROM classes c ORDER BY niveau, nom").fetchall()
+
+
+def analyser_import(import_en_cours, correspondance):
+    """Relit le fichier temporaire et vérifie toutes ses lignes pour la classe choisie."""
+    classe = get_db().execute("SELECT * FROM classes WHERE id = ?",
+                              (import_en_cours["classe_id"],)).fetchone()
+    if classe is None:
+        abort(404)
+    with open(chemin_import(import_en_cours["jeton"], ".donnees"), "rb") as fichier:
+        lignes = importation.lire_fichier(import_en_cours["nom_fichier"], fichier.read())
+    matricules = {ligne["matricule"] for ligne in get_db().execute("SELECT matricule FROM eleves").fetchall()}
+    places = classe["effectif_max"] - effectif(classe["id"])
+    resultats = importation.analyser_lignes(lignes, correspondance, matricules, places)
+    return classe, lignes, resultats
+
+
+def lire_correspondance(formulaire, nombre_colonnes):
+    """Correspondance choisie dans le formulaire : {champ: indice de colonne ou None}."""
+    correspondance = {}
+    for champ in importation.CHAMPS:
+        indice = lire_entier(formulaire.get("colonne_" + champ))
+        correspondance[champ] = indice if indice is not None and 0 <= indice < nombre_colonnes else None
+    return correspondance
+
+
+@app.route("/admin/import")
+@admin_requis
+def import_eleves():
+    """Étape 1 : choix de la classe et du fichier."""
+    return render_template("admin/import.html", etape=1, classes=classes_avec_places(),
+                           classe_id=lire_entier(request.args.get("classe")))
+
+
+@app.route("/admin/import/analyse", methods=["POST"])
+@admin_requis
+def analyser_fichier():
+    """Étape 2 : lecture du fichier (ou nouvelle correspondance des colonnes) et aperçu."""
+    fichier = request.files.get("fichier")
+    if fichier and fichier.filename:
+        # Nouveau fichier : on le garde sous un nom aléatoire jusqu'à l'import
+        classe_id = lire_entier(request.form.get("classe_id"))
+        if classe_id not in [c["id"] for c in classes_avec_places()]:
+            flash("Choisissez la classe de destination.", "erreur")
+            return redirect(url_for("import_eleves"))
+        nom_fichier = os.path.basename(fichier.filename)
+        if not nom_fichier.lower().endswith(importation.EXTENSIONS):
+            flash("Format non accepté : envoyez un fichier CSV, XLSX, XLS ou ODS.", "erreur")
+            return redirect(url_for("import_eleves", classe=classe_id))
+        jeton = secrets.token_hex(16)
+        fichier.save(chemin_import(jeton, ".donnees"))
+        session["import"] = {"jeton": jeton, "nom_fichier": nom_fichier, "classe_id": classe_id,
+                             "taille": os.path.getsize(chemin_import(jeton, ".donnees"))}
+        correspondance = None
+    elif "import" in session:
+        correspondance = {}  # correspondance choisie par l'utilisateur, lue plus bas
+    else:
+        flash("Choisissez un fichier à importer.", "erreur")
+        return redirect(url_for("import_eleves"))
+
+    import_en_cours = session["import"]
+    try:
+        with open(chemin_import(import_en_cours["jeton"], ".donnees"), "rb") as donnees:
+            lignes = importation.lire_fichier(import_en_cours["nom_fichier"], donnees.read())
+    except (importation.ErreurFichier, FileNotFoundError) as erreur:
+        flash(str(erreur) if isinstance(erreur, importation.ErreurFichier)
+              else "Le fichier n'est plus disponible : envoyez-le de nouveau.", "erreur")
+        return redirect(url_for("import_eleves", classe=import_en_cours["classe_id"]))
+    if correspondance is None:
+        correspondance = importation.deviner_correspondance(lignes[0])
+    else:
+        correspondance = lire_correspondance(request.form, len(lignes[0]))
+    session["import"] = dict(import_en_cours, correspondance=correspondance)
+
+    classe, lignes, resultats = analyser_import(import_en_cours, correspondance)
+    ordre = {"erreur": 0, "doublon": 1, "valide": 2}
+    return render_template(
+        "admin/import.html", etape=2, classe=classe, entete=lignes[0], resultats=resultats,
+        apercu=sorted(resultats, key=lambda r: (ordre[r["etat"]], r["numero"]))[:60],
+        correspondance=correspondance, libelles=importation.LIBELLES_CHAMPS,
+        import_en_cours=import_en_cours,
+        compte={etat: sum(1 for r in resultats if r["etat"] == etat) for etat in ordre},
+        champs_manquants=[importation.LIBELLES_CHAMPS[c] for c in ("nom", "prenom", "date_naissance")
+                          if correspondance.get(c) is None],
+    )
+
+
+@app.route("/admin/import/confirmer", methods=["POST"])
+@admin_requis
+def confirmer_import():
+    """Étape 3 : import des lignes valides (le fichier est revérifié), codes affichés une fois."""
+    import_en_cours = session.get("import")
+    if not import_en_cours or "correspondance" not in import_en_cours:
+        flash("Aucun import en cours.", "erreur")
+        return redirect(url_for("import_eleves"))
+    try:
+        classe, _, resultats = analyser_import(import_en_cours, import_en_cours["correspondance"])
+    except (importation.ErreurFichier, FileNotFoundError):
+        flash("Le fichier n'est plus disponible : envoyez-le de nouveau.", "erreur")
+        return redirect(url_for("import_eleves"))
+    valides = [r for r in resultats if r["etat"] == "valide"]
+    if not valides:
+        flash("Aucune ligne valide à importer.", "erreur")
+        return redirect(url_for("import_eleves", classe=classe["id"]))
+
+    db = get_db()
+    crees = []
+    try:
+        with db:  # tout ou rien
+            for ligne in valides:
+                matricule = ligne["matricule"] or generer_matricule(classe)
+                code = generer_code()
+                db.execute(
+                    "INSERT INTO eleves (matricule, nom, prenom, classe_id, date_naissance, code_empreinte) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (matricule, ligne["nom"], ligne["prenom"], classe["id"], ligne["date_naissance"],
+                     generate_password_hash(code)))
+                crees.append({"matricule": matricule, "nom": ligne["nom"], "prenom": ligne["prenom"], "code": code})
+    except sqlite3.IntegrityError:
+        flash("Un matricule a été utilisé entre-temps : rien n'a été importé, recommencez l'analyse.", "erreur")
+        return redirect(url_for("import_eleves", classe=classe["id"]))
+
+    # Le fichier envoyé est supprimé ; la liste des codes est gardée pour un seul téléchargement
+    os.remove(chemin_import(import_en_cours["jeton"], ".donnees"))
+    with open(chemin_import(import_en_cours["jeton"], ".codes.csv"), "w", newline="", encoding="utf-8-sig") as sortie:
+        ecrivain = csv.writer(sortie, delimiter=";")
+        ecrivain.writerow(["matricule", "nom", "prenom", "classe", "code_acces"])
+        for eleve in crees:
+            ecrivain.writerow([eleve["matricule"], eleve["nom"], eleve["prenom"], classe["nom"], eleve["code"]])
+    session["import"] = {"jeton": import_en_cours["jeton"], "codes": True}
+    flash(f"{len(crees)} élève(s) importé(s) dans {classe['nom']}.", "succes")
+    return render_template("admin/import_resultat.html", classe=classe, crees=crees,
+                           ignorees=len(resultats) - len(crees), effectif=effectif(classe["id"]))
+
+
+@app.route("/admin/import/codes.csv")
+@admin_requis
+def telecharger_codes():
+    """Liste des codes d'accès du dernier import, téléchargeable une seule fois."""
+    import_en_cours = session.get("import") or {}
+    if not import_en_cours.get("codes"):
+        abort(404)
+    chemin = chemin_import(import_en_cours["jeton"], ".codes.csv")
+    if not os.path.exists(chemin):
+        abort(404)
+    with open(chemin, encoding="utf-8") as fichier:
+        contenu = fichier.read()
+    os.remove(chemin)
+    session.pop("import", None)
+    return Response(contenu, mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=codes_acces.csv"})
+
+
+@app.route("/admin/import/modele.<format_modele>")
+@admin_requis
+def modele_import(format_modele):
+    """Modèle de fichier à remplir (CSV ou XLSX)."""
+    if format_modele == "csv":
+        return Response(importation.modele_csv(), mimetype="text/csv",
+                        headers={"Content-Disposition": "attachment; filename=modele_eleves.csv"})
+    if format_modele == "xlsx":
+        return Response(importation.modele_xlsx(),
+                        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        headers={"Content-Disposition": "attachment; filename=modele_eleves.xlsx"})
+    abort(404)
+
+
 # --- Statistiques ----------------------------------------------------------------
 
 def derniere_sequence_notee():
@@ -1295,6 +1482,13 @@ def api_statistiques():
 def acces_interdit(erreur):
     """Page affichée quand l'utilisateur n'a pas le droit d'accéder à une page."""
     return render_template("403.html"), 403
+
+
+@app.errorhandler(413)
+def fichier_trop_gros(erreur):
+    """Fichier envoyé plus gros que MAX_CONTENT_LENGTH."""
+    flash("Le fichier dépasse 2 Mo.", "erreur")
+    return redirect(url_for("import_eleves"))
 
 
 @app.errorhandler(404)

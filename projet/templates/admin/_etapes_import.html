@@ -1,0 +1,10 @@
+{# Indicateur des 3 étapes de l'import (variable : etape) #}
+{% from "macros.html" import icone with context %}
+<ol class="etapes-import" aria-label="Étapes de l'import">
+    {% for numero, titre, detail in [(1, "Fichier", "CSV, XLSX, XLS, ODS"), (2, "Vérification", "colonnes et erreurs"), (3, "Confirmation", "codes d'accès")] %}
+    <li class="etape-import{% if numero == etape %} etape-courante{% elif numero < etape %} etape-faite{% endif %}"{% if numero == etape %} aria-current="step"{% endif %}>
+        <span class="etape-marque">{% if numero < etape %}{{ icone("coche", "icone-petite") }}{% else %}{{ numero }}{% endif %}</span>
+        <span class="pile-serree etape-texte"><span class="gras">{{ titre }}</span><span class="texte-tres-petit texte-secondaire">{{ detail }}</span></span>
+    </li>
+    {% endfor %}
+</ol>

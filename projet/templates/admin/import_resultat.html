@@ -1,0 +1,49 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone with context %}
+
+{% block titre %}Import terminé{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/impression.css') }}" media="print">
+{% endblock %}
+
+{% block contenu %}
+<div class="entete-page masquer-impression">
+    <div class="entete-page-titre">
+        <a class="fil" href="{{ url_for('admin_eleves', classe=classe.id) }}">{{ icone("fleche-gauche", "icone-petite") }}{{ classe.nom }}</a>
+        <h1>Importer des élèves</h1>
+    </div>
+</div>
+
+<div class="masquer-impression">{% set etape = 3 %}{% include "admin/_etapes_import.html" %}</div>
+
+<section class="carte pile centre resultat-import masquer-impression">
+    <span class="rond-succes">{{ icone("coche", "icone-grande") }}</span>
+    <h2>{{ crees|length }} élève(s) importé(s) dans {{ classe.nom }}</h2>
+    <p class="texte-secondaire">Un matricule et un code d'accès ont été créés pour chaque élève. Effectif de la classe : {{ effectif }} / {{ classe.effectif_max }}.{% if ignorees %} {{ ignorees }} ligne(s) ignorée(s).{% endif %}</p>
+    <div class="encadre encadre-avertissement">{{ icone("cadenas") }}<span><strong>Codes affichés une seule fois.</strong> Seules leurs empreintes sont enregistrées : imprimez cette page ou téléchargez la liste (un seul téléchargement possible), puis remettez à chaque élève son code.</span></div>
+    <div class="ligne ligne-centree">
+        <a class="bouton bouton-principal" href="{{ url_for('telecharger_codes') }}">{{ icone("telecharger") }}Télécharger les codes (CSV)</a>
+        <button type="button" class="bouton" data-imprimer>{{ icone("imprimer") }}Imprimer la liste</button>
+        <a class="bouton bouton-discret" href="{{ url_for('admin_eleves', classe=classe.id) }}">Voir la classe{{ icone("fleche-droite", "icone-petite") }}</a>
+    </div>
+</section>
+
+<section class="carte carte-sans-marge" aria-labelledby="titre-codes">
+    <div class="carte-entete"><h2 id="titre-codes">Codes d'accès — {{ classe.nom }} — {{ nom_lycee }}</h2></div>
+    <div class="tableau-conteneur">
+        <table class="tableau">
+            <thead><tr><th scope="col">Matricule</th><th scope="col">Nom et prénom</th><th scope="col">Code d'accès</th></tr></thead>
+            <tbody>
+                {% for eleve in crees %}
+                <tr>
+                    <td class="chiffres sans-retour">{{ eleve.matricule }}</td>
+                    <th scope="row">{{ eleve.nom }} {{ eleve.prenom }}</th>
+                    <td class="chiffres gras code-tableau">{{ eleve.code[:3] }} {{ eleve.code[3:] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

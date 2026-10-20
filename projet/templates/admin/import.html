@@ -1,0 +1,119 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, csrf, champ_liste with context %}
+
+{% block titre %}Importer des élèves{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <a class="fil" href="{{ url_for('admin_eleves') }}">{{ icone("fleche-gauche", "icone-petite") }}Élèves</a>
+        <h1>Importer des élèves</h1>
+        <span class="texte-secondaire">Ajoutez toute une classe en une fois depuis un tableur.</span>
+    </div>
+</div>
+
+{% include "admin/_etapes_import.html" %}
+
+{% if etape == 1 %}
+<div class="disposition">
+    <form class="carte formulaire zone-principale" method="post" action="{{ url_for('analyser_fichier') }}" enctype="multipart/form-data" data-valider novalidate>
+        {{ csrf() }}
+        {{ champ_liste("classe_id", "Classe de destination", classes|map(attribute="id")|zip(classes|map("libelle_classe")), classe_id or "", obligatoire=True, vide="Choisir une classe") }}
+        <div class="champ">
+            <span class="libelle" id="libelle-fichier">Fichier des élèves <span class="champ-obligatoire" aria-hidden="true">*</span></span>
+            <label for="champ-fichier" class="zone-depot" data-zone-depot>
+                <span class="zone-depot-icone">{{ icone("televerser", "icone-grande") }}</span>
+                <span class="gras">Glissez votre fichier ici ou <span class="lien-simule">parcourez</span></span>
+                <span class="texte-secondaire texte-petit">CSV, XLSX, XLS ou ODS · 2 Mo maximum · une ligne par élève</span>
+                <span class="fichier-choisi gras" data-nom-fichier hidden></span>
+                <input id="champ-fichier" class="visuellement-cache" name="fichier" type="file" required
+                       accept=".csv,.xlsx,.xls,.ods" aria-labelledby="libelle-fichier">
+            </label>
+        </div>
+        <button type="submit" class="bouton bouton-principal bouton-grand">Analyser le fichier{{ icone("fleche-droite") }}</button>
+    </form>
+    <aside class="carte pile zone-laterale">
+        <h2>Colonnes attendues</h2>
+        <dl class="liste-definitions">
+            <dt><code>nom</code></dt><dd>obligatoire</dd>
+            <dt><code>prenom</code></dt><dd>obligatoire</dd>
+            <dt><code>date_naissance</code></dt><dd>JJ/MM/AAAA</dd>
+            <dt><code>matricule</code></dt><dd>facultatif, généré sinon</dd>
+        </dl>
+        <p class="texte-secondaire texte-petit">La première ligne contient les noms des colonnes. Les variantes courantes sont reconnues (« NOM », « Prénoms », « Date de naissance »…).</p>
+        <div class="pile-serree">
+            <span class="gras texte-petit">Télécharger un modèle</span>
+            <div class="ligne">
+                <a class="bouton" href="{{ url_for('modele_import', format_modele='csv') }}">{{ icone("tableur", "icone-petite") }}modele.csv</a>
+                <a class="bouton" href="{{ url_for('modele_import', format_modele='xlsx') }}">{{ icone("tableur", "icone-petite") }}modele.xlsx</a>
+            </div>
+        </div>
+    </aside>
+</div>
+
+{% else %}
+<section class="indicateurs" aria-label="Résultat de l'analyse">
+    <div class="indicateur"><span class="indicateur-libelle">Lignes lues</span><span class="indicateur-valeur">{{ resultats|length }}</span><span class="indicateur-detail">{{ import_en_cours.nom_fichier }}</span></div>
+    <div class="indicateur indicateur-vert"><span class="indicateur-libelle">Prêtes à importer</span><span class="indicateur-valeur">{{ compte.valide }}</span><span class="indicateur-detail">vers {{ classe.nom }}</span></div>
+    <div class="indicateur indicateur-ambre"><span class="indicateur-libelle">Doublons</span><span class="indicateur-valeur">{{ compte.doublon }}</span></div>
+    <div class="indicateur indicateur-rouge"><span class="indicateur-libelle">Erreurs</span><span class="indicateur-valeur">{{ compte.erreur }}</span></div>
+</section>
+
+<form class="carte pile" method="post" action="{{ url_for('analyser_fichier') }}">
+    {{ csrf() }}
+    <div class="ligne-espacee">
+        <h2>Correspondance des colonnes</h2>
+        <button type="submit" class="bouton">{{ icone("historique", "icone-petite") }}Appliquer et revérifier</button>
+    </div>
+    {% if champs_manquants %}
+    <div class="encadre encadre-avertissement">{{ icone("alerte") }}<span>Colonne à choisir : {{ champs_manquants|join(", ") }}.</span></div>
+    {% endif %}
+    <div class="grille-champs">
+        {% for champ, libelle in libelles.items() %}
+        {% set options = [] %}
+        {% for colonne in entete %}{% set _ = options.append((loop.index0, "Colonne " ~ loop.index ~ " : " ~ colonne)) %}{% endfor %}
+        {{ champ_liste("colonne_" ~ champ, libelle, options, correspondance.get(champ) if correspondance.get(champ) is not none else "", vide="Ignorer / absente") }}
+        {% endfor %}
+    </div>
+</form>
+
+<section class="carte carte-sans-marge" aria-labelledby="titre-apercu">
+    <div class="carte-entete">
+        <h2 id="titre-apercu">Aperçu</h2>
+        <span class="texte-secondaire texte-petit">Les lignes à problème sont affichées en premier{% if resultats|length > apercu|length %} · {{ apercu|length }} premières lignes sur {{ resultats|length }}{% endif %}</span>
+    </div>
+    <div class="tableau-conteneur">
+        <table class="tableau">
+            <thead><tr><th scope="col" class="num">Ligne</th><th scope="col">Nom</th><th scope="col">Prénom</th><th scope="col">Naissance</th><th scope="col">Matricule</th><th scope="col">État</th></tr></thead>
+            <tbody>
+                {% for r in apercu %}
+                <tr class="{{ {'erreur': 'ligne-en-erreur', 'doublon': 'ligne-doublon'}.get(r.etat, '') }}">
+                    <td class="num texte-secondaire">{{ r.numero }}</td>
+                    <th scope="row">{{ r.nom or "—" }}</th>
+                    <td>{{ r.prenom or "—" }}</td>
+                    <td class="chiffres">{{ r.date_naissance|date_fr if r.date_naissance and r.date_naissance[4:5] == "-" else (r.date_naissance or "—") }}</td>
+                    <td class="chiffres texte-secondaire sans-retour">{{ r.matricule or "généré" }}</td>
+                    <td><span class="badge {{ {'valide': 'badge-vert', 'doublon': 'badge-ambre', 'erreur': 'badge-rouge'}[r.etat] }}">{{ r.message }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<form class="carte pile" method="post" action="{{ url_for('confirmer_import') }}" data-confirmer="Importer {{ compte.valide }} élève(s) dans {{ classe.nom }} ?">
+    {{ csrf() }}
+    {% if compte.erreur or compte.doublon %}
+    <p class="texte-secondaire">Les {{ compte.erreur + compte.doublon }} ligne(s) en erreur ou en doublon seront ignorées. Pour les importer, corrigez le fichier puis envoyez-le de nouveau.</p>
+    {% endif %}
+    <div class="ligne-espacee">
+        <a class="bouton" href="{{ url_for('import_eleves', classe=classe.id) }}">{{ icone("fleche-gauche") }}Changer de fichier</a>
+        <button type="submit" class="bouton bouton-principal bouton-grand"{% if not compte.valide %} disabled{% endif %}>{{ icone("utilisateur-plus") }}Importer {{ compte.valide }} élève(s)</button>
+    </div>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/import.js') }}"></script>
+{% endblock %}

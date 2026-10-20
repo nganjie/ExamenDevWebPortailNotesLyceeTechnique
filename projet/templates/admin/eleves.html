@@ -11,6 +11,7 @@
         {% if classe_choisie %}<span class="texte-secondaire texte-petit">{{ classe_choisie.effectif }} élèves inscrits · effectif maximal {{ classe_choisie.effectif_max }} · {{ classe_choisie.effectif_max - classe_choisie.effectif }} places libres</span>{% endif %}
     </div>
     <div class="ligne">
+        <a class="bouton" href="{{ url_for('import_eleves', classe=filtre_classe) if filtre_classe else url_for('import_eleves') }}">{{ icone("televerser") }}Importer un fichier</a>
         <a class="bouton" href="{{ url_for('exporter_eleves', classe=filtre_classe) if filtre_classe else url_for('exporter_eleves') }}">{{ icone("telecharger") }}Exporter (CSV)</a>
         <a class="bouton bouton-principal" href="#ajout-eleve">{{ icone("utilisateur-plus") }}Ajouter un élève</a>
     </div>
@@ -81,7 +82,7 @@
                                 "data-message-motif": "Format attendu : LT25-F3-0017."}) }}
             <button type="submit" class="bouton bouton-principal bouton-grand">{{ icone("cle") }}Ajouter et générer le code</button>
         </form>
-        <a class="encadre encadre-info lien-encadre" href="#ajout-eleve">{{ icone("televerser") }}<span>Pour inscrire toute une classe d'un coup, utilisez l'import de fichier (CSV, XLSX…).</span></a>
+        <a class="encadre encadre-info lien-encadre" href="{{ url_for('import_eleves', classe=filtre_classe) if filtre_classe else url_for('import_eleves') }}">{{ icone("televerser") }}<span>Pour inscrire toute une classe d'un coup, utilisez l'import de fichier (CSV, XLSX…).</span></a>
     </aside>
 </div>
 {% endblock %}
