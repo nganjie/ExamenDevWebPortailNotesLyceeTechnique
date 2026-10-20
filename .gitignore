@@ -17,3 +17,6 @@ Thumbs.db
 *.db-journal
 *.db-wal
 *.db-shm
+
+# Caches de tests
+.pytest_cache/
