@@ -20,8 +20,14 @@ et où chaque élève (ou parent) consulte son bulletin avec son matricule et un
     └── telephone/
 ```
 
-Les instructions d'installation et de lancement de l'application sont dans
+Les instructions d'installation, de lancement, les comptes de test et le tableau des routes sont dans
 [`projet/README.md`](projet/README.md).
+
+## État d'avancement
+
+L'application est complète : les 11 étapes de la [feuille de route](docs/plans/2026-10-20_feuille-de-route.md)
+sont réalisées, chacune avec sa spec et son plan. La [matrice de suivi](docs/cahier_des_charges.md#18-matrice-de-suivi)
+indique ce qui reste à faire par le groupe : rapport PowerPoint, vidéo et préparation de la clé USB.
 
 ## Méthode de travail
 

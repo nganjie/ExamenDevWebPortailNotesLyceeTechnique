@@ -392,26 +392,41 @@ Le sujet laisse certains choix ouverts ; ils seront tranchés et justifiés dans
 
 | Id | Exigence (résumé) | Spec | Statut |
 |---|---|---|---|
-| `G-TECH-*` | Exigences techniques communes | — | à faire |
-| `P3-BD-1..5` | Schéma de base et contraintes | — | à faire |
-| `P3-DT-1..6` | Données de test | — | à faire |
-| `P3-PUB-1` | Connexion élève | — | à faire |
-| `P3-PUB-2` | Bulletin de séquence (moyenne, rang) | — | à faire |
-| `P3-PUB-3` | Historique des moyennes | — | à faire |
-| `P3-ADM-1` | Connexion enseignant | — | à faire |
-| `P3-ADM-2` | Saisie des notes par classe | — | à faire |
-| `P3-ADM-3` | Correction d'une note | — | à faire |
-| `P3-ADM-4` | Liste de classe avec moyennes et rangs | — | à faire |
-| `P3-JS-1..2` | Contrôle 0-20 et moyenne en direct | — | à faire |
-| `P3-JS-3` | Graphique d'évolution | — | à faire |
-| `P3-API-1..2` | Routes JSON | — | à faire |
-| `P3-STAT-1..4` | Statistiques | — | à faire |
-| `P3-RG-1..5` | Règles métier (moyenne, rang, unicité, confidentialité) | — | à faire |
-| `P3-BON-1..2` | Bonus impression et appréciation | — | optionnel |
-| `P3-EXT-1` | Gestion des classes | — | maquette faite |
-| `P3-EXT-2` | Ajout d'un élève + code d'accès | — | maquette faite |
-| `P3-EXT-3` | Import CSV / XLSX / XLS / ODS | — | maquette faite |
-| `P3-EXT-4` | Évaluations | — | maquette faite |
-| `P3-EXT-5` | Rôle administrateur | — | à faire |
-| `P3-EXT-6` | Export CSV des élèves | — | maquette faite |
-| Squelette | Structure initiale de l'application | [`2026-10-20_squelette-initial`](specs/2026-10-20_squelette-initial.md) | fait |
+| `G-TECH-1` | Flask, SQLite, 3 tables liées + contraintes | [étape 01](specs/2026-10-20_etape01-base-de-donnees.md) | fait (7 tables) |
+| `G-TECH-2` | base.html, flash, 404 | [étape 02](specs/2026-10-20_etape02-charte-gabarits.md) | fait (+ 403, 500) |
+| `G-TECH-3` | HTML sémantique, alt, label, validé W3C | [étape 11](specs/2026-10-20_etape11-finitions.md) | fait (23 pages, 0 erreur) |
+| `G-TECH-4` | CSS séparé, mobile d'abord, 2 points de rupture | [étape 02](specs/2026-10-20_etape02-charte-gabarits.md) | fait (600 et 1024 px) |
+| `G-TECH-5` | vérification JS d'un formulaire + fetch | étapes 02, 05, 06, 07, 08 | fait |
+| `G-TECH-6` | au moins 2 routes JSON | étapes 05, 07, 08 | fait (3 routes) |
+| `G-TECH-7` | administration protégée, mots de passe hachés | [étape 04](specs/2026-10-20_etape04-authentification.md) | fait |
+| `G-TECH-8` | vérifications serveur, `?`, POST, `debug=False` | toutes | fait (+ CSRF) |
+| `G-TECH-9` | `donnees_test.py` avec les volumes | [étape 01](specs/2026-10-20_etape01-base-de-donnees.md) | fait |
+| `G-TECH-10` | code commenté en français | toutes | fait |
+| `P3-BD-1..5` | Schéma de base et contraintes | [étape 01](specs/2026-10-20_etape01-base-de-donnees.md) | fait |
+| `P3-DT-1..6` | Données de test | [étape 01](specs/2026-10-20_etape01-base-de-donnees.md) | fait |
+| `P3-PUB-1` | Connexion élève | [étape 04](specs/2026-10-20_etape04-authentification.md) | fait |
+| `P3-PUB-2` | Bulletin de séquence (moyenne, rang) | [étape 05](specs/2026-10-20_etape05-espace-eleve.md) | fait |
+| `P3-PUB-3` | Historique des moyennes | [étape 05](specs/2026-10-20_etape05-espace-eleve.md) | fait |
+| `P3-ADM-1` | Connexion enseignant | [étape 04](specs/2026-10-20_etape04-authentification.md) | fait |
+| `P3-ADM-2` | Saisie des notes par classe | [étape 06](specs/2026-10-20_etape06-evaluations-saisie.md) | fait |
+| `P3-ADM-3` | Correction d'une note | [étape 06](specs/2026-10-20_etape06-evaluations-saisie.md) | fait (avec historique) |
+| `P3-ADM-4` | Liste de classe avec moyennes et rangs | [étape 07](specs/2026-10-20_etape07-listes-de-classe.md) | fait |
+| `P3-JS-1..2` | Contrôle 0-20 et moyenne en direct | [étape 06](specs/2026-10-20_etape06-evaluations-saisie.md) | fait |
+| `P3-JS-3` | Graphique d'évolution | [étape 05](specs/2026-10-20_etape05-espace-eleve.md) | fait (Chart.js) |
+| `P3-API-1` | `/api/classe/<id>/moyennes` | [étape 07](specs/2026-10-20_etape07-listes-de-classe.md) | fait |
+| `P3-API-2` | deuxième route JSON | étapes 05 et 08 | fait |
+| `P3-STAT-1..4` | Statistiques | [étape 08](specs/2026-10-20_etape08-statistiques.md) | fait |
+| `P3-RG-1..5` | Moyenne, rang ex æquo, unicité, confidentialité, contrôle serveur | étapes 03 à 07 | fait (testé) |
+| `P3-BON-1` | Bulletin imprimable (`@media print`) | [étape 05](specs/2026-10-20_etape05-espace-eleve.md) | fait (1 page A4) |
+| `P3-BON-2` | Appréciation automatique | [étape 03](specs/2026-10-20_etape03-calculs.md) | fait |
+| `P3-EXT-1` | Gestion des classes | [étape 09](specs/2026-10-20_etape09-administration.md) | fait |
+| `P3-EXT-2` | Ajout d'un élève + code d'accès | [étape 09](specs/2026-10-20_etape09-administration.md) | fait |
+| `P3-EXT-3` | Import CSV / XLSX / XLS / ODS | [étape 10](specs/2026-10-20_etape10-import-eleves.md) | fait |
+| `P3-EXT-4` | Évaluations | [étape 06](specs/2026-10-20_etape06-evaluations-saisie.md) | fait |
+| `P3-EXT-5` | Rôle administrateur | [étape 04](specs/2026-10-20_etape04-authentification.md) | fait |
+| `P3-EXT-6` | Export CSV des élèves | [étape 09](specs/2026-10-20_etape09-administration.md) | fait |
+| `G-LIV-1` | Rapport PowerPoint | — | à faire par le groupe |
+| `G-LIV-2` | Projet testable (README, base, export) | [étape 11](specs/2026-10-20_etape11-finitions.md) | fait |
+| `G-LIV-3` | Captures ordinateur / téléphone | [étape 11](specs/2026-10-20_etape11-finitions.md) | fait (`captures/`) |
+| `G-LIV-4` | Vidéo de 5 à 10 minutes | — | à faire par le groupe |
+| `G-USB-*` | Clé USB et arborescence | — | à faire au moment du rendu |
