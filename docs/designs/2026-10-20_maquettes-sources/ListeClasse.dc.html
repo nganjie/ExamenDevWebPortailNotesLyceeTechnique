@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Liste de classe</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F7FB}
+a{color:#1D4ED8}a:hover{color:#1E3A8A}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F5F7FB; font-family: Inter, system-ui, sans-serif; color: #0F172A; display: flex; flex-wrap: wrap">
+
+  <aside style="flex: 1 1 248px; max-width: 100%; background: #0F172A; color: #E2E8F0; padding: 24px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px">
+    <a href="Main.dc.html" style="display: flex; gap: 10px; align-items: center; text-decoration: none; color: #FFFFFF; padding: 0 8px">
+      <span style="width: 38px; height: 38px; border-radius: 10px; background: {{primary}}; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"></path><path d="M6 12v5c3 2 9 2 12 0v-5"></path></svg>
+      </span>
+      <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 16px">Espace enseignant</span>
+    </a>
+    <nav aria-label="Menu enseignant">
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+        <li><a href="Saisie.dc.html" style="display: flex; gap: 10px; align-items: center; padding: 12px; border-radius: 8px; color: #CBD5E1; text-decoration: none; font-weight: 500; font-size: 15px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>Saisie des notes</a></li>
+        <li><a href="ListeClasse.dc.html" aria-current="page" style="display: flex; gap: 10px; align-items: center; padding: 12px; border-radius: 8px; background: #1E293B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 15px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"></path></svg>Listes de classe</a></li>
+        <li><a href="Statistiques.dc.html" style="display: flex; gap: 10px; align-items: center; padding: 12px; border-radius: 8px; color: #CBD5E1; text-decoration: none; font-weight: 500; font-size: 15px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M7 16v-4M12 16V8M17 16v-7"></path></svg>Statistiques</a></li>
+      </ul>
+    </nav>
+    <div style="margin-top: auto; padding: 14px 8px 0; border-top: 1px solid #1E293B; display: flex; flex-direction: column; gap: 10px">
+      <span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 600; color: #FFFFFF">M. Fotso Jean</span><span style="font-size: 13px; color: #94A3B8">Électrotechnique</span></span>
+      <a href="Main.dc.html" style="color: #CBD5E1; font-size: 14px">Se déconnecter</a>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 640px; min-width: 0; padding: 28px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: flex-end">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 14px; color: #475569">Liste de classe · Séquence 2</span>
+        <h1 style="margin: 0; font-family: Manrope, sans-serif; font-weight: 800; font-size: 30px">2e année F3 — Électrotechnique</h1>
+      </div>
+      <form role="search" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+        <label for="l-recherche" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Rechercher un élève</label>
+        <input id="l-recherche" type="search" placeholder="Rechercher un élève" style="width: 240px; height: 44px; padding: 0 14px; border: 1px solid #CBD5E1; border-radius: 10px; font-size: 15px; font-family: Inter, sans-serif; background: #FFFFFF">
+        <label for="l-seq" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Séquence</label>
+        <select id="l-seq" style="height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font-size: 15px; font-family: Inter, sans-serif"><option>Séquence 1</option><option selected="selected">Séquence 2</option></select>
+      </form>
+    </div>
+
+    <section aria-label="Indicateurs de la classe" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #475569">Moyenne générale</span><span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 32px">{{moyenne}}</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #475569">Taux de réussite (≥ 10)</span><span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 32px">{{reussite}}</span><span style="font-size: 13px; color: #475569">{{admis}} élèves sur 30</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; color: #475569">Effectif</span><span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 32px">30 / 35</span><span style="font-size: 13px; color: #475569">Effectif maximal : 35</span></div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+      <section style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden">
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 620px; border-collapse: collapse; font-size: 15px">
+            <thead>
+              <tr style="background: #F8FAFC; text-align: left; color: #475569; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em">
+                <th scope="col" style="padding: 12px 18px; font-weight: 600; width: 72px">Rang</th>
+                <th scope="col" style="padding: 12px 12px; font-weight: 600">Élève</th>
+                <th scope="col" style="padding: 12px 12px; font-weight: 600; width: 220px">Moyenne / 20</th>
+                <th scope="col" style="padding: 12px 12px; font-weight: 600">Appréciation</th>
+                <th scope="col" style="padding: 12px 18px; font-weight: 600; text-align: right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{lignes}}" as="r" hint-placeholder-count="30">
+                <tr style="border-top: 1px solid #EEF2F7; background: {{r.fondLigne}}">
+                  <td style="padding: 10px 18px">
+                    <span style="display: inline-flex; gap: 4px; align-items: baseline">
+                      <span style="display: inline-flex; min-width: 34px; height: 30px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; background: {{r.fondRang}}; color: {{r.couleurRang}}">{{r.rang}}</span>
+                      <sc-if value="{{r.exaequo}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 600; color: #B45309">ex</span></sc-if>
+                    </span>
+                  </td>
+                  <td style="padding: 10px 12px">
+                    <div style="font-weight: 600">{{r.nom}}</div>
+                    <div style="font-size: 13px; color: #475569">{{r.matricule}}</div>
+                  </td>
+                  <td style="padding: 10px 12px">
+                    <div style="display: flex; gap: 10px; align-items: center">
+                      <span style="width: 52px; font-weight: 700; font-variant-numeric: tabular-nums; color: {{r.couleurMoy}}">{{r.moy}}</span>
+                      <span style="flex: 1; height: 8px; border-radius: 999px; background: #EEF2F7; overflow: hidden"><span style="display: block; height: 8px; border-radius: 999px; width: {{r.largeur}}; background: {{r.couleurBarre}}"></span></span>
+                    </div>
+                  </td>
+                  <td style="padding: 10px 12px; color: #334155">{{r.appreciation}}</td>
+                  <td style="padding: 10px 18px; text-align: right"><a href="#correction" style="display: inline-block; padding: 8px 10px; font-size: 14px; font-weight: 600">Corriger</a></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+        <form id="correction" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+          <h2 style="margin: 0; font-family: Manrope, sans-serif; font-size: 17px; font-weight: 800">Corriger une note</h2>
+          <div style="padding: 12px; border-radius: 10px; background: #F8FAFC; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-weight: 600">NGO BASSA Aline</span>
+            <span style="font-size: 13px; color: #475569">Électrotechnique · Séquence 2</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <label for="c-ancienne" style="font-size: 13px; font-weight: 600; color: #334155">Note actuelle</label>
+              <input id="c-ancienne" type="text" value="15,00" readonly="readonly" style="height: 44px; padding: 0 12px; border: 1px solid #E2E8F0; border-radius: 10px; font-size: 15px; font-family: Inter, sans-serif; background: #F1F5F9; color: #475569">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <label for="c-nouvelle" style="font-size: 13px; font-weight: 600; color: #334155">Nouvelle note</label>
+              <input id="c-nouvelle" type="text" inputmode="decimal" value="15,50" style="height: 44px; padding: 0 12px; border: 2px solid {{primary}}; border-radius: 10px; font-size: 15px; font-weight: 600; font-family: Inter, sans-serif; background: #FFFFFF; color: #0F172A">
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="c-motif" style="font-size: 13px; font-weight: 600; color: #334155">Motif de la correction</label>
+            <textarea id="c-motif" rows="3" style="padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 10px; font-size: 15px; font-family: Inter, sans-serif; resize: vertical">Erreur de report : exercice 3 non compté.</textarea>
+          </div>
+          <button type="submit" style="height: 48px; border: 0; border-radius: 10px; background: {{primary}}; color: #FFFFFF; font-size: 15px; font-weight: 600; font-family: Inter, sans-serif; cursor: pointer">Enregistrer la correction</button>
+        </form>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 12px; background: #FEF3C7; color: #78350F; font-size: 14px; line-height: 1.5">
+          <span style="font-weight: 700">Rangs ex æquo</span>
+          <span>Deux élèves à la même moyenne partagent le rang ; le suivant prend le rang d'après (5, 5, puis 7).</span>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#1D4ED8","options":["#1D4ED8","#0F766E","#7C3AED"]},"$preview":{"width":1440,"height":2060}}'>
+class Component extends DCLogic {
+  appreciation(v) {
+    if (v < 8) return 'Insuffisant';
+    if (v < 10) return 'Médiocre';
+    if (v < 12) return 'Passable';
+    if (v < 14) return 'Assez bien';
+    if (v < 16) return 'Bien';
+    return 'Très bien';
+  }
+  renderVals() {
+    const primary = this.props.primary ?? '#1D4ED8';
+    const brut = [
+      ['TCHOUPO Kevin', 27, 15.86], ['MBARGA Paul', 14, 14.92], ['NJOYA Ibrahim', 19, 14.40],
+      ['YAMDJEU Carine', 29, 13.75], ['EKANE Sandra', 6, 13.20], ['SADOU Aïcha', 24, 13.20],
+      ['NGO BASSA Aline', 17, 12.98], ['FOUDA Marcelle', 9, 12.50], ['NGUEMA Patricia', 18, 12.50],
+      ['TABI Michelle', 25, 12.31], ['MANGA Estelle', 12, 11.96], ['ATANGANA Rose', 3, 11.74],
+      ['NANA Vanessa', 15, 11.58], ['OWONA Steve', 23, 11.22], ['KAMGA Hervé', 10, 10.87],
+      ['ZE Linda', 31, 10.61], ['ABENA Christelle', 2, 10.43], ['WAMBA Diane', 28, 10.25],
+      ['DJOMO Franck', 5, 10.04], ['NKOULOU Samuel', 20, 9.86], ['BELLO Moussa', 4, 9.61],
+      ['MBALLA Cédric', 13, 9.40], ['KENFACK Ulrich', 11, 9.12], ['TCHAMENI Loïc', 26, 8.95],
+      ['ESSOMBA Yannick', 7, 8.63], ['ETOA Brice', 8, 8.27], ['ONANA Grâce', 22, 7.94],
+      ['NOAH Joël', 21, 7.58], ['NDJOCK Arnaud', 16, 7.12], ['ZANG Rodrigue', 30, 6.74],
+    ];
+    const fr = (v) => v.toFixed(2).replace('.', ',');
+    // Classement avec ex æquo : même moyenne = même rang, le suivant saute les places
+    const tries = brut.slice().sort((a, b) => b[2] - a[2]);
+    let rang = 0;
+    const lignes = tries.map((e, i) => {
+      if (i === 0 || e[2] !== tries[i - 1][2]) rang = i + 1;
+      const exaequo = tries.some((x, j) => j !== i && x[2] === e[2]);
+      const podium = rang <= 3;
+      const echec = e[2] < 10;
+      return {
+        rang,
+        exaequo,
+        nom: e[0],
+        matricule: 'LT24-F3-' + String(e[1]).padStart(4, '0'),
+        moy: fr(e[2]),
+        largeur: (e[2] / 20 * 100).toFixed(1) + '%',
+        appreciation: this.appreciation(e[2]),
+        fondRang: podium ? '#FEF3C7' : '#F1F5F9',
+        couleurRang: podium ? '#92400E' : '#334155',
+        couleurMoy: echec ? '#B91C1C' : '#0F172A',
+        couleurBarre: echec ? '#F87171' : primary,
+        fondLigne: e[0] === 'NGO BASSA Aline' ? '#F5F8FF' : '#FFFFFF',
+      };
+    });
+    const somme = brut.reduce((a, e) => a + e[2], 0);
+    const admis = brut.filter((e) => e[2] >= 10).length;
+    return {
+      primary,
+      lignes,
+      moyenne: fr(somme / brut.length),
+      admis,
+      reussite: (admis / brut.length * 100).toFixed(1).replace('.', ',') + ' %',
+    };
+  }
+}
+</script>
+</body>
+</html>

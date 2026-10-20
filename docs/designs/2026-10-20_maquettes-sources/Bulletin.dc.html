@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Bulletin de séquence</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F7FB}
+a{color:#1D4ED8}a:hover{color:#1E3A8A}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F5F7FB; font-family: Inter, system-ui, sans-serif; color: #0F172A; display: flex; flex-direction: column">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E2E8F0">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between">
+      <a href="Main.dc.html" style="display: flex; gap: 12px; align-items: center; text-decoration: none; color: #0F172A">
+        <span style="width: 40px; height: 40px; border-radius: 10px; background: {{primary}}; display: flex; align-items: center; justify-content: center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"></path><path d="M6 12v5c3 2 9 2 12 0v-5"></path></svg>
+        </span>
+        <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 17px">Portail de notes</span>
+      </a>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+        <span style="width: 40px; height: 40px; border-radius: 999px; background: #FEF3C7; color: #92400E; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 15px">AN</span>
+        <span style="display: flex; flex-direction: column; line-height: 1.25">
+          <span style="font-weight: 600; font-size: 15px">NGO BASSA Aline</span>
+          <span style="font-size: 13px; color: #475569">LT24-F3-0017 · 2e année F3</span>
+        </span>
+        <a href="Main.dc.html" style="margin-left: 8px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #0F172A">Déconnexion</a>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 32px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: space-between">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 14px; color: #475569">Année scolaire 2026-2027 · 2e année F3 — Électrotechnique</span>
+        <h1 style="margin: 0; font-family: Manrope, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -0.01em">Bulletin de la séquence {{seq}}</h1>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+        <nav aria-label="Choix de la séquence" style="display: flex; gap: 4px; padding: 4px; background: #E9EDF3; border-radius: 10px">
+          <sc-for list="{{sequences}}" as="s" hint-placeholder-count="6">
+            <sc-if value="{{s.active}}" hint-placeholder-val="{{ false }}">
+              <button type="button" aria-current="true" style="min-width: 44px; height: 40px; border: 0; border-radius: 8px; background: #FFFFFF; color: #0F172A; font-weight: 700; font-size: 14px; font-family: Inter, sans-serif; box-shadow: 0 1px 3px rgba(15,23,42,0.12); cursor: pointer">S{{s.num}}</button>
+            </sc-if>
+            <sc-if value="{{s.choisissable}}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{s.choisir}}" style="min-width: 44px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: #334155; font-weight: 600; font-size: 14px; font-family: Inter, sans-serif; cursor: pointer">S{{s.num}}</button>
+            </sc-if>
+            <sc-if value="{{s.indispo}}" hint-placeholder-val="{{ true }}">
+              <button type="button" disabled="disabled" aria-label="Séquence {{s.num}} non disponible" style="min-width: 44px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: #94A3B8; font-weight: 500; font-size: 14px; font-family: Inter, sans-serif">S{{s.num}}</button>
+            </sc-if>
+          </sc-for>
+        </nav>
+        <button type="button" style="height: 48px; padding: 0 16px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; color: #0F172A; font-size: 15px; font-weight: 600; font-family: Inter, sans-serif; display: flex; gap: 8px; align-items: center; cursor: pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
+          Imprimer
+        </button>
+      </div>
+    </div>
+
+    <section aria-label="Synthèse" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px">
+      <div style="background: {{primary}}; color: #FFFFFF; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 14px; opacity: 0.9">Moyenne coefficientée</span>
+        <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 40px; line-height: 1">{{moyenne}}<span style="font-size: 18px; font-weight: 600; opacity: 0.85"> / 20</span></span>
+        <span style="font-size: 14px; font-weight: 600">{{appreciation}}</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 14px; color: #475569">Rang dans la classe</span>
+        <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 40px; line-height: 1">{{rang}}<span style="font-size: 18px; font-weight: 600; color: #475569"> / 30</span></span>
+        <span style="font-size: 14px; color: #475569">{{rangInfo}}</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 14px; color: #475569">Moyenne de la classe</span>
+        <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 40px; line-height: 1">{{moyClasse}}</span>
+        <span style="font-size: 14px; color: #047857; font-weight: 600">{{ecart}} au-dessus de la classe</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 14px; color: #475569">Extrêmes de la classe</span>
+        <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 26px; line-height: 1.2">{{extremes}}</span>
+        <span style="font-size: 14px; color: #475569">Plus forte · plus faible moyenne</span>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden">
+      <div style="padding: 18px 22px; border-bottom: 1px solid #E2E8F0; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center">
+        <h2 style="margin: 0; font-family: Manrope, sans-serif; font-size: 19px; font-weight: 800">Notes par matière</h2>
+        <span style="font-size: 14px; color: #475569">Total des coefficients : 24</span>
+      </div>
+      <div style="overflow-x: auto">
+        <table style="width: 100%; min-width: 820px; border-collapse: collapse; font-size: 15px">
+          <thead>
+            <tr style="background: #F8FAFC; text-align: left; color: #475569; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em">
+              <th scope="col" style="padding: 12px 22px; font-weight: 600">Matière</th>
+              <th scope="col" style="padding: 12px 12px; font-weight: 600; text-align: center">Coef.</th>
+              <th scope="col" style="padding: 12px 12px; font-weight: 600; text-align: center">Note / 20</th>
+              <th scope="col" style="padding: 12px 12px; font-weight: 600; text-align: center">Note × coef.</th>
+              <th scope="col" style="padding: 12px 12px; font-weight: 600; text-align: center">Moy. classe</th>
+              <th scope="col" style="padding: 12px 22px; font-weight: 600">Appréciation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{lignes}}" as="l" hint-placeholder-count="8">
+              <tr style="border-top: 1px solid #EEF2F7">
+                <td style="padding: 14px 22px">
+                  <div style="font-weight: 600">{{l.matiere}}</div>
+                  <div style="font-size: 13px; color: #475569">{{l.prof}}</div>
+                </td>
+                <td style="padding: 14px 12px; text-align: center; color: #334155">{{l.coef}}</td>
+                <td style="padding: 14px 12px; text-align: center">
+                  <span style="display: inline-block; min-width: 56px; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-variant-numeric: tabular-nums; background: {{l.fond}}; color: {{l.couleur}}">{{l.note}}</span>
+                </td>
+                <td style="padding: 14px 12px; text-align: center; font-variant-numeric: tabular-nums; color: #334155">{{l.points}}</td>
+                <td style="padding: 14px 12px; text-align: center; font-variant-numeric: tabular-nums; color: #475569">{{l.classe}}</td>
+                <td style="padding: 14px 22px; color: #334155">{{l.appreciation}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+          <tfoot>
+            <tr style="border-top: 2px solid #E2E8F0; background: #F8FAFC; font-weight: 700">
+              <td style="padding: 14px 22px">Total</td>
+              <td style="padding: 14px 12px; text-align: center">24</td>
+              <td style="padding: 14px 12px"></td>
+              <td style="padding: 14px 12px; text-align: center; font-variant-numeric: tabular-nums">{{totalPoints}}</td>
+              <td style="padding: 14px 12px"></td>
+              <td style="padding: 14px 22px">Moyenne : {{moyenne}} / 20</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px">
+      <section style="flex: 1 1 380px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <h2 style="margin: 0; font-family: Manrope, sans-serif; font-size: 19px; font-weight: 800">Historique des moyennes</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 15px">
+          <thead>
+            <tr style="text-align: left; color: #475569; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em">
+              <th scope="col" style="padding: 8px 0; font-weight: 600">Séquence</th>
+              <th scope="col" style="padding: 8px 0; font-weight: 600; text-align: right">Moyenne</th>
+              <th scope="col" style="padding: 8px 0; font-weight: 600; text-align: right">Rang</th>
+              <th scope="col" style="padding: 8px 0; font-weight: 600; text-align: right">Classe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top: 1px solid #EEF2F7"><td style="padding: 12px 0; font-weight: 600">Séquence 1</td><td style="padding: 12px 0; text-align: right; font-weight: 700">12,04</td><td style="padding: 12px 0; text-align: right">9e</td><td style="padding: 12px 0; text-align: right; color: #475569">10,61</td></tr>
+            <tr style="border-top: 1px solid #EEF2F7"><td style="padding: 12px 0; font-weight: 600">Séquence 2</td><td style="padding: 12px 0; text-align: right; font-weight: 700">12,98</td><td style="padding: 12px 0; text-align: right">7e</td><td style="padding: 12px 0; text-align: right; color: #475569">10,92</td></tr>
+            <tr style="border-top: 1px solid #EEF2F7; color: #94A3B8"><td style="padding: 12px 0">Séquence 3</td><td style="padding: 12px 0; text-align: right">—</td><td style="padding: 12px 0; text-align: right">—</td><td style="padding: 12px 0; text-align: right">—</td></tr>
+            <tr style="border-top: 1px solid #EEF2F7; color: #94A3B8"><td style="padding: 12px 0">Séquences 4 à 6</td><td style="padding: 12px 0; text-align: right">—</td><td style="padding: 12px 0; text-align: right">—</td><td style="padding: 12px 0; text-align: right">—</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section style="flex: 1.4 1 480px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center">
+          <h2 style="margin: 0; font-family: Manrope, sans-serif; font-size: 19px; font-weight: 800">Évolution</h2>
+          <div style="display: flex; gap: 16px; font-size: 13px; color: #334155">
+            <span style="display: flex; gap: 6px; align-items: center"><span style="width: 14px; height: 4px; border-radius: 2px; background: {{primary}}"></span>Élève</span>
+            <span style="display: flex; gap: 6px; align-items: center"><span style="width: 14px; height: 4px; border-radius: 2px; background: #94A3B8"></span>Classe</span>
+            <span style="display: flex; gap: 6px; align-items: center"><span style="width: 14px; height: 0; border-top: 2px dashed #B45309"></span>Seuil 10</span>
+          </div>
+        </div>
+        <svg viewBox="0 0 600 250" width="100%" role="img" aria-label="Moyenne de l'élève : 12,04 en séquence 1 puis 12,98 en séquence 2 ; moyenne de la classe : 10,61 puis 10,92" style="display: block; font-family: Inter, sans-serif">
+          <g stroke="#EEF2F7" stroke-width="1">
+            <line x1="40" y1="20" x2="590" y2="20"></line>
+            <line x1="40" y1="70" x2="590" y2="70"></line>
+            <line x1="40" y1="120" x2="590" y2="120"></line>
+            <line x1="40" y1="220" x2="590" y2="220"></line>
+          </g>
+          <line x1="40" y1="170" x2="590" y2="170" stroke="#B45309" stroke-width="2" stroke-dasharray="6 5"></line>
+          <g fill="#475569" font-size="12" text-anchor="end">
+            <text x="30" y="24">16</text><text x="30" y="74">14</text><text x="30" y="124">12</text><text x="30" y="174">10</text><text x="30" y="224">8</text>
+          </g>
+          <g fill="#475569" font-size="12" text-anchor="middle">
+            <text x="80" y="244">S1</text><text x="182" y="244">S2</text><text x="284" y="244">S3</text><text x="386" y="244">S4</text><text x="488" y="244">S5</text><text x="580" y="244">S6</text>
+          </g>
+          <polyline points="80,154.75 182,147" fill="none" stroke="#94A3B8" stroke-width="3" stroke-linecap="round"></polyline>
+          <circle cx="80" cy="154.75" r="5" fill="#94A3B8"></circle>
+          <circle cx="182" cy="147" r="5" fill="#94A3B8"></circle>
+          <polyline points="80,119 182,95.5" fill="none" stroke="{{primary}}" stroke-width="3" stroke-linecap="round"></polyline>
+          <circle cx="80" cy="119" r="6" fill="#FFFFFF" stroke="{{primary}}" stroke-width="3"></circle>
+          <circle cx="182" cy="95.5" r="6" fill="#FFFFFF" stroke="{{primary}}" stroke-width="3"></circle>
+          <text x="80" y="104" font-size="13" font-weight="700" fill="#0F172A" text-anchor="middle">12,04</text>
+          <text x="182" y="81" font-size="13" font-weight="700" fill="#0F172A" text-anchor="middle">12,98</text>
+          <g stroke="#CBD5E1" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round">
+            <line x1="284" y1="200" x2="284" y2="215"></line><line x1="386" y1="200" x2="386" y2="215"></line><line x1="488" y1="200" x2="488" y2="215"></line><line x1="580" y1="200" x2="580" y2="215"></line>
+          </g>
+        </svg>
+        <p style="margin: 0; font-size: 13px; color: #475569">Données chargées depuis /api/eleve/&lt;id&gt;/evolution · séquences 3 à 6 à venir.</p>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#1D4ED8","options":["#1D4ED8","#0F766E","#7C3AED"]},"$preview":{"width":1440,"height":1560}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { seq: 2 };
+  }
+  fr(v) {
+    return v.toFixed(2).replace('.', ',');
+  }
+  appreciation(v) {
+    if (v < 8) return 'Insuffisant';
+    if (v < 10) return 'Médiocre';
+    if (v < 12) return 'Passable';
+    if (v < 14) return 'Assez bien';
+    if (v < 16) return 'Bien';
+    return 'Très bien';
+  }
+  renderVals() {
+    const primary = this.props.primary ?? '#1D4ED8';
+    const matieres = [
+      { matiere: 'Électrotechnique', prof: 'M. Fotso', coef: 5, n: [14, 15], c: [12.2, 12.6] },
+      { matiere: 'Mathématiques', prof: 'M. Atangana', coef: 4, n: [12, 13.5], c: [10.4, 10.8] },
+      { matiere: 'Technologie', prof: 'M. Kamga', coef: 4, n: [11, 12], c: [10.9, 11.2] },
+      { matiere: 'Sciences physiques', prof: 'Mme Ekane', coef: 3, n: [10, 11], c: [9.5, 9.9] },
+      { matiere: 'Dessin technique', prof: 'M. Njoya', coef: 3, n: [11, 12.5], c: [11.3, 11.7] },
+      { matiere: 'Français', prof: 'Mme Mballa', coef: 2, n: [11.5, 10], c: [10.1, 10.4] },
+      { matiere: 'Anglais', prof: 'Mrs Tabi', coef: 2, n: [13, 14], c: [11.6, 11.9] },
+      { matiere: 'Éducation physique', prof: 'M. Bello', coef: 1, n: [15, 16], c: [13.8, 14.1] },
+    ];
+    const infos = {
+      1: { rang: '9e', rangInfo: 'Progression à suivre', classe: 10.61, ext: '15,12 · 6,30' },
+      2: { rang: '7e', rangInfo: '+2 places depuis la séquence 1', classe: 10.92, ext: '15,86 · 6,74' },
+    };
+    const seq = this.state.seq;
+    const i = seq - 1;
+    let total = 0;
+    const lignes = matieres.map((m) => {
+      const note = m.n[i];
+      total += note * m.coef;
+      const faible = note < 10;
+      return {
+        matiere: m.matiere,
+        prof: m.prof,
+        coef: m.coef,
+        note: this.fr(note),
+        points: this.fr(note * m.coef),
+        // décalage pour que la moyenne pondérée des matières = moyenne de la classe
+        classe: this.fr(m.c[i] - [0.465, 0.5175][i]),
+        appreciation: this.appreciation(note),
+        fond: faible ? '#FEE2E2' : '#E8EEFD',
+        couleur: faible ? '#B91C1C' : '#1E3A8A',
+      };
+    });
+    const moy = total / 24;
+    const info = infos[seq];
+    const sequences = [1, 2, 3, 4, 5, 6].map((num) => ({
+      num,
+      active: num === seq,
+      choisissable: num !== seq && num <= 2,
+      indispo: num > 2,
+      choisir: () => this.setState({ seq: num }),
+    }));
+    return {
+      primary,
+      seq,
+      sequences,
+      lignes,
+      totalPoints: this.fr(total),
+      moyenne: this.fr(moy),
+      appreciation: this.appreciation(moy),
+      rang: info.rang,
+      rangInfo: info.rangInfo,
+      moyClasse: this.fr(info.classe),
+      ecart: '+' + this.fr(moy - info.classe),
+      extremes: info.ext,
+    };
+  }
+}
+</script>
+</body>
+</html>

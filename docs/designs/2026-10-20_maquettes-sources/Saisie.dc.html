@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Saisie des notes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F7FB}
+a{color:#1D4ED8}a:hover{color:#1E3A8A}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F5F7FB; font-family: Inter, system-ui, sans-serif; color: #0F172A; display: flex; flex-wrap: wrap">
+
+  <aside style="flex: 1 1 248px; max-width: 100%; background: #0F172A; color: #E2E8F0; padding: 24px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px">
+    <a href="Main.dc.html" style="display: flex; gap: 10px; align-items: center; text-decoration: none; color: #FFFFFF; padding: 0 8px">
+      <span style="width: 38px; height: 38px; border-radius: 10px; background: {{primary}}; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"></path><path d="M6 12v5c3 2 9 2 12 0v-5"></path></svg>
+      </span>
+      <span style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 16px">Espace enseignant</span>
+    </a>
+    <nav aria-label="Menu enseignant">
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+        <li><a href="Saisie.dc.html" aria-current="page" style="display: flex; gap: 10px; align-items: center; padding: 12px; border-radius: 8px; background: #1E293B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 15px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>Saisie des notes</a></li>
+        <li><a href="ListeClasse.dc.html" style="display: flex; gap: 10px; align-items: center; padding: 12px; border-radius: 8px; color: #CBD5E1; text-decoration: none; font-weight: 500; font-size: 15px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"></path></svg>Listes de classe</a></li>
+        <li><a href="Statistiques.dc.html" style="display: flex; gap: 10px; align-items: center; padding: 12px; border-radius: 8px; color: #CBD5E1; text-decoration: none; font-weight: 500; font-size: 15px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M7 16v-4M12 16V8M17 16v-7"></path></svg>Statistiques</a></li>
+      </ul>
+    </nav>
+    <div style="margin-top: auto; padding: 14px 8px 0; border-top: 1px solid #1E293B; display: flex; flex-direction: column; gap: 10px">
+      <span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 600; color: #FFFFFF">M. Fotso Jean</span><span style="font-size: 13px; color: #94A3B8">Électrotechnique</span></span>
+      <a href="Main.dc.html" style="color: #CBD5E1; font-size: 14px">Se déconnecter</a>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 640px; min-width: 0; padding: 28px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 14px; color: #475569">Saisie des notes</span>
+      <h1 style="margin: 0; font-family: Manrope, sans-serif; font-weight: 800; font-size: 30px">Électrotechnique · 2e année F3 · Séquence 2</h1>
+    </div>
+
+    <form style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px 18px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end">
+      <div style="flex: 1 1 200px; display: flex; flex-direction: column; gap: 6px">
+        <label for="f-classe" style="font-size: 13px; font-weight: 600; color: #334155">Classe</label>
+        <select id="f-classe" style="height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font-size: 15px; font-family: Inter, sans-serif"><option selected="selected">2e année F3 (30 élèves)</option><option>3e année F2</option><option>1re année F4</option><option>4e année F1</option></select>
+      </div>
+      <div style="flex: 1 1 200px; display: flex; flex-direction: column; gap: 6px">
+        <label for="f-matiere" style="font-size: 13px; font-weight: 600; color: #334155">Matière</label>
+        <select id="f-matiere" style="height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font-size: 15px; font-family: Inter, sans-serif"><option selected="selected">Électrotechnique (coef. 5)</option></select>
+      </div>
+      <div style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 6px">
+        <label for="f-seq" style="font-size: 13px; font-weight: 600; color: #334155">Séquence</label>
+        <select id="f-seq" style="height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font-size: 15px; font-family: Inter, sans-serif"><option>Séquence 1</option><option selected="selected">Séquence 2</option><option>Séquence 3</option></select>
+      </div>
+      <button type="button" style="height: 44px; padding: 0 18px; border: 1px solid #CBD5E1; border-radius: 10px; background: #F8FAFC; font-size: 15px; font-weight: 600; font-family: Inter, sans-serif; color: #0F172A; cursor: pointer">Afficher</button>
+    </form>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+      <section style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden">
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 560px; border-collapse: collapse; font-size: 15px">
+            <thead>
+              <tr style="background: #F8FAFC; text-align: left; color: #475569; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em">
+                <th scope="col" style="padding: 12px 18px; font-weight: 600; width: 44px">N°</th>
+                <th scope="col" style="padding: 12px 12px; font-weight: 600">Élève</th>
+                <th scope="col" style="padding: 12px 12px; font-weight: 600">Matricule</th>
+                <th scope="col" style="padding: 12px 18px; font-weight: 600; width: 230px">Note / 20</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{eleves}}" as="e" hint-placeholder-count="30">
+                <tr style="border-top: 1px solid #EEF2F7; background: {{e.ligne}}">
+                  <td style="padding: 8px 18px; color: #475569; font-variant-numeric: tabular-nums">{{e.num}}</td>
+                  <td style="padding: 8px 12px; font-weight: 600"><label for="{{e.id}}">{{e.nom}}</label></td>
+                  <td style="padding: 8px 12px; color: #475569; font-variant-numeric: tabular-nums">{{e.matricule}}</td>
+                  <td style="padding: 8px 18px">
+                    <div style="display: flex; flex-direction: column; gap: 4px">
+                      <input id="{{e.id}}" type="text" inputmode="decimal" value="{{e.valeur}}" onChange="{{e.modifier}}" placeholder="—" aria-invalid="{{e.invalide}}" style="width: 96px; height: 40px; padding: 0 10px; border: 2px solid {{e.bord}}; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: Inter, sans-serif; font-variant-numeric: tabular-nums; color: #0F172A; background: #FFFFFF; text-align: center">
+                      <sc-if value="{{e.erreur}}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 12px; color: #B91C1C; font-weight: 500">Note refusée : entre 0 et 20</span>
+                      </sc-if>
+                    </div>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside aria-label="Synthèse en direct" style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+        <section style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <h2 style="margin: 0; font-family: Manrope, sans-serif; font-size: 17px; font-weight: 800">Moyenne de la classe</h2>
+            <span style="display: flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 600; color: #047857"><span style="width: 8px; height: 8px; border-radius: 999px; background: #10B981"></span>En direct</span>
+          </div>
+          <span aria-live="polite" style="font-family: Manrope, sans-serif; font-weight: 800; font-size: 46px; line-height: 1; color: {{primary}}">{{moyenne}}</span>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; font-size: 14px">
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 10px; background: #F8FAFC"><span style="color: #475569">Saisies</span><span style="font-weight: 700; font-size: 18px">{{saisies}} / 30</span></div>
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 10px; background: {{fondErreurs}}"><span style="color: #475569">Erreurs</span><span style="font-weight: 700; font-size: 18px; color: {{couleurErreurs}}">{{erreurs}}</span></div>
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 10px; background: #F8FAFC"><span style="color: #475569">Note max.</span><span style="font-weight: 700; font-size: 18px">{{max}}</span></div>
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 10px; background: #F8FAFC"><span style="color: #475569">Note min.</span><span style="font-weight: 700; font-size: 18px">{{min}}</span></div>
+          </div>
+          <sc-if value="{{bloque}}" hint-placeholder-val="{{ true }}">
+            <button type="button" disabled="disabled" style="height: 50px; border: 0; border-radius: 10px; background: #CBD5E1; color: #334155; font-size: 16px; font-weight: 600; font-family: Inter, sans-serif">Corrigez les erreurs pour enregistrer</button>
+          </sc-if>
+          <sc-if value="{{pret}}" hint-placeholder-val="{{ false }}">
+            <button type="submit" style="height: 50px; border: 0; border-radius: 10px; background: {{primary}}; color: #FFFFFF; font-size: 16px; font-weight: 600; font-family: Inter, sans-serif; cursor: pointer">Enregistrer les {{saisies}} notes</button>
+          </sc-if>
+        </section>
+        <div style="display: flex; gap: 10px; padding: 14px; border-radius: 12px; background: #E8EEFD; color: #1E3A8A; font-size: 14px; line-height: 1.5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path></svg>
+          <span>Chaque note est revérifiée par le serveur. Une note déjà saisie pour cette séquence se corrige depuis la liste de classe.</span>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#1D4ED8","options":["#1D4ED8","#0F766E","#7C3AED"]},"$preview":{"width":1440,"height":2140}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.noms = ['ABENA Christelle', 'ATANGANA Rose', 'BELLO Moussa', 'DJOMO Franck', 'EKANE Sandra', 'ESSOMBA Yannick', 'ETOA Brice', 'FOUDA Marcelle', 'KAMGA Hervé', 'KENFACK Ulrich', 'MANGA Estelle', 'MBALLA Cédric', 'MBARGA Paul', 'NANA Vanessa', 'NDJOCK Arnaud', 'NGO BASSA Aline', 'NGUEMA Patricia', 'NJOYA Ibrahim', 'NKOULOU Samuel', 'NOAH Joël', 'ONANA Grâce', 'OWONA Steve', 'SADOU Aïcha', 'TABI Michelle', 'TCHAMENI Loïc', 'TCHOUPO Kevin', 'WAMBA Diane', 'YAMDJEU Carine', 'ZANG Rodrigue', 'ZE Linda'];
+    this.state = {
+      notes: ['11', '13,5', '9', '10', '14', '', '8,5', '12', '10,5', '22', '13', '9,5', '16', '11,5', '7', '15', '12,5', '15,5', '10', '8', '', '11', '13', '12', '9', '17', '10,5', '14,5', '6,5', '12'],
+    };
+  }
+  analyser(texte) {
+    const t = String(texte).trim().replace(',', '.');
+    if (t === '') return { vide: true };
+    const v = Number(t);
+    if (!/^\d+(\.\d+)?$/.test(t) || v < 0 || v > 20) return { erreur: true };
+    return { valeur: v };
+  }
+  renderVals() {
+    const primary = this.props.primary ?? '#1D4ED8';
+    const fr = (v) => v.toFixed(2).replace('.', ',');
+    const valides = [];
+    let erreurs = 0;
+    const eleves = this.noms.map((nom, i) => {
+      const texte = this.state.notes[i];
+      const r = this.analyser(texte);
+      if (r.erreur) erreurs += 1;
+      if (r.valeur !== undefined) valides.push(r.valeur);
+      return {
+        num: i + 1,
+        id: 'note-' + (i + 1),
+        nom,
+        matricule: 'LT24-F3-' + String(i + 2).padStart(4, '0'),
+        valeur: texte,
+        erreur: !!r.erreur,
+        invalide: r.erreur ? 'true' : 'false',
+        bord: r.erreur ? '#B91C1C' : (r.vide ? '#CBD5E1' : '#E2E8F0'),
+        ligne: r.erreur ? '#FEF2F2' : '#FFFFFF',
+        modifier: (ev) => {
+          const notes = this.state.notes.slice();
+          notes[i] = ev.target.value;
+          this.setState({ notes });
+        },
+      };
+    });
+    const somme = valides.reduce((a, b) => a + b, 0);
+    return {
+      primary,
+      eleves,
+      moyenne: valides.length ? fr(somme / valides.length) : '—',
+      saisies: valides.length,
+      erreurs,
+      max: valides.length ? fr(Math.max(...valides)) : '—',
+      min: valides.length ? fr(Math.min(...valides)) : '—',
+      fondErreurs: erreurs ? '#FEE2E2' : '#F8FAFC',
+      couleurErreurs: erreurs ? '#B91C1C' : '#0F172A',
+      bloque: erreurs > 0,
+      pret: erreurs === 0,
+    };
+  }
+}
+</script>
+</body>
+</html>

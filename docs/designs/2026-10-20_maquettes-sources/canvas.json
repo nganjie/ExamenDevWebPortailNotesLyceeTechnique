@@ -1,0 +1,22 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-10-20T07:40:00Z"},
+  "title": "Maquettes Portail de notes",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 980, "title": "1 · Accueil et connexion (ordinateur)", "expand": "fill", "is_interactive": true},
+    "Bulletin.dc.html": {"x": 1520, "y": 0, "w": 1440, "h": 1560, "title": "2 · Bulletin de séquence (ordinateur)", "expand": "fill", "is_interactive": true},
+    "ConnexionMobile.dc.html": {"x": 3040, "y": 0, "w": 390, "h": 844, "title": "3 · Connexion élève (téléphone)"},
+    "BulletinMobile.dc.html": {"x": 3510, "y": 0, "w": 390, "h": 1240, "title": "4 · Bulletin (téléphone)"},
+    "Saisie.dc.html": {"x": 0, "y": 1980, "w": 1440, "h": 2140, "title": "5 · Saisie des notes d'une classe", "expand": "fill", "is_interactive": true},
+    "ListeClasse.dc.html": {"x": 1520, "y": 1980, "w": 1440, "h": 2060, "title": "6 · Liste de classe, moyennes et rangs", "expand": "fill"},
+    "Statistiques.dc.html": {"x": 3040, "y": 1980, "w": 1440, "h": 1640, "title": "7 · Statistiques", "expand": "fill"}
+  },
+  "order": ["Main.dc.html", "Bulletin.dc.html", "ConnexionMobile.dc.html", "BulletinMobile.dc.html", "Saisie.dc.html", "ListeClasse.dc.html", "Statistiques.dc.html"],
+  "notes": {
+    "eleve": {"x": 0, "y": -300, "text": "Espace élève / parent", "kind": "title1", "maxW": 3900},
+    "enseignant": {"x": 0, "y": 1680, "text": "Espace enseignant (administration)", "kind": "title1", "maxW": 4480}
+  },
+  "designSystems": []
+}
