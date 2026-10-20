@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "macros.html" import icone, csrf with context %}
+
+{# Mise en page de l'espace enseignant : menu latéral sombre + contenu #}
+{% block page %}
+{% set menu_pedagogie = [
+    {"endpoint": "tableau_de_bord", "libelle": "Tableau de bord", "icone": "accueil", "actifs": ["tableau_de_bord"]},
+] %}
+{% set menu_administration = [] %}
+<div class="espace">
+    <div class="barre-mobile">
+        <a class="logo" href="{{ url_for('tableau_de_bord') }}">
+            <span class="logo-marque">{{ icone("ecole") }}</span>
+            <span class="logo-nom">Espace enseignant</span>
+        </a>
+        <button type="button" class="bouton bouton-icone" data-bascule-menu aria-controls="menu-espace" aria-expanded="false" aria-label="Ouvrir le menu">{{ icone("menu") }}</button>
+    </div>
+
+    <aside id="menu-espace" class="barre-laterale">
+        <a class="logo" href="{{ url_for('tableau_de_bord') }}">
+            <span class="logo-marque">{{ icone("ecole") }}</span>
+            <span class="logo-texte"><span class="logo-nom">Espace enseignant</span><span class="logo-sous-titre">{{ nom_lycee }}</span></span>
+        </a>
+        <nav class="nav-espace" aria-label="Menu enseignant">
+            <div class="nav-groupe">
+                <span class="nav-groupe-titre">Pédagogie</span>
+                <ul>
+                    {% for lien in menu_pedagogie %}
+                    <li><a class="lien-nav" href="{{ url_for(lien.endpoint) }}"{% if request.endpoint in lien.actifs %} aria-current="page"{% endif %}>{{ icone(lien.icone) }}{{ lien.libelle }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% if g.enseignant.role == "administrateur" and menu_administration %}
+            <div class="nav-groupe">
+                <span class="nav-groupe-titre">Administration</span>
+                <ul>
+                    {% for lien in menu_administration %}
+                    <li><a class="lien-nav" href="{{ url_for(lien.endpoint) }}"{% if request.endpoint in lien.actifs %} aria-current="page"{% endif %}>{{ icone(lien.icone) }}{{ lien.libelle }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </nav>
+        <div class="utilisateur-espace">
+            <div class="identite">
+                <span class="avatar" aria-hidden="true">{{ g.enseignant.nom|initiales }}</span>
+                <span class="identite-texte">
+                    <span class="identite-nom">{{ g.enseignant.nom }}</span>
+                    <span class="identite-detail">{{ "Administrateur" if g.enseignant.role == "administrateur" else "Enseignant" }}</span>
+                </span>
+            </div>
+            <form method="post" action="{{ url_for('deconnexion') }}" class="formulaire-en-ligne">
+                {{ csrf() }}
+                <button type="submit" class="bouton-deconnexion">{{ icone("sortie", "icone-petite") }}Se déconnecter</button>
+            </form>
+        </div>
+    </aside>
+
+    <main id="contenu" class="contenu-espace">
+        {% include "_messages.html" %}
+        {% block contenu %}{% endblock %}
+    </main>
+</div>
+{% endblock %}

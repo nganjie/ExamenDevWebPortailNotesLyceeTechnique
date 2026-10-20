@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "macros.html" import icone with context %}
+
+{% block titre %}Accès refusé{% endblock %}
+
+{% block contenu %}
+<section class="conteneur erreur-page" aria-labelledby="titre-erreur">
+    <span class="erreur-code">403</span>
+    <h1 id="titre-erreur">Accès refusé</h1>
+    <p class="texte-secondaire">Votre compte ne permet pas d'ouvrir cette page.</p>
+    <a class="bouton bouton-principal" href="{{ url_for('accueil') }}">{{ icone("accueil") }}Retour à l'accueil</a>
+</section>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "macros.html" import icone, csrf with context %}
+
+{# Bandeau de l'espace élève : identité et déconnexion #}
+{% block entete_droite %}
+<div class="ligne">
+    <div class="identite">
+        <span class="avatar" aria-hidden="true">{{ (g.eleve.nom ~ " " ~ g.eleve.prenom)|initiales }}</span>
+        <span class="identite-texte">
+            <span class="identite-nom">{{ g.eleve.nom }} {{ g.eleve.prenom }}</span>
+            <span class="identite-detail">{{ g.eleve.matricule }} · {{ g.eleve.classe_nom }}</span>
+        </span>
+    </div>
+    <form method="post" action="{{ url_for('deconnexion') }}" class="formulaire-en-ligne">
+        {{ csrf() }}
+        <button type="submit" class="bouton">{{ icone("sortie") }}Déconnexion</button>
+    </form>
+</div>
+{% endblock %}

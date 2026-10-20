@@ -1,0 +1,69 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, badge_statut, jauge with context %}
+
+{% block titre %}Tableau de bord{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <span class="fil">Année scolaire {{ annee_scolaire }}</span>
+        <h1>Bonjour, {{ g.enseignant.nom }}</h1>
+    </div>
+</div>
+
+<section class="indicateurs" aria-label="Chiffres clés">
+    <div class="indicateur">
+        <span class="indicateur-libelle">Mes matières</span>
+        <span class="indicateur-valeur">{{ matieres|length }}</span>
+        <span class="indicateur-detail">{{ matieres|map(attribute="nom")|join(", ") or "Aucune matière" }}</span>
+    </div>
+    <div class="indicateur">
+        <span class="indicateur-libelle">Évaluations à traiter</span>
+        <span class="indicateur-valeur">{{ a_traiter|length }}</span>
+        <span class="indicateur-detail">sur {{ nombre_evaluations }} évaluations</span>
+    </div>
+    <div class="indicateur">
+        <span class="indicateur-libelle">Classes</span>
+        <span class="indicateur-valeur">{{ chiffres.classes }}</span>
+        <span class="indicateur-detail">{{ chiffres.eleves }} élèves inscrits</span>
+    </div>
+</section>
+
+<section class="carte carte-sans-marge" aria-labelledby="titre-a-traiter">
+    <div class="carte-entete">
+        <h2 id="titre-a-traiter">Évaluations à traiter</h2>
+    </div>
+    {% if a_traiter %}
+    <div class="tableau-conteneur">
+        <table class="tableau">
+            <thead>
+                <tr><th scope="col">Évaluation</th><th scope="col">Date</th><th scope="col">Notes saisies</th><th scope="col">Statut</th></tr>
+            </thead>
+            <tbody>
+                {% for ev in a_traiter %}
+                <tr>
+                    <td><strong>{{ ev.matiere_nom }} · {{ ev.classe_nom }}</strong><span class="sous-texte">{{ ev.intitule }} · séquence {{ ev.sequence }}</span></td>
+                    <td class="chiffres">{{ ev.date_evaluation|date_fr }}</td>
+                    <td><span class="texte-petit gras chiffres">{{ ev.saisies }} / {{ ev.effectif }}</span>{{ jauge(ev.saisies, ev.effectif) }}</td>
+                    <td>{{ badge_statut(ev.etat, ev.etat_libelle) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="carte-vide">{{ icone("succes") }}Toutes vos évaluations sont à jour.</p>
+    {% endif %}
+</section>
+
+{% if a_venir %}
+<section class="carte pile" aria-labelledby="titre-a-venir">
+    <h2 id="titre-a-venir">Prochaines évaluations</h2>
+    <ul class="liste-simple">
+        {% for ev in a_venir %}
+        <li>{{ icone("calendrier", "icone-petite") }}<span><strong>{{ ev.date_evaluation|date_fr }}</strong> · {{ ev.matiere_nom }} · {{ ev.classe_nom }} · {{ ev.intitule }}</span></li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+{% endblock %}

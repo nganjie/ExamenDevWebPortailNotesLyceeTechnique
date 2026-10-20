@@ -1,0 +1,10 @@
+{% extends "layout_eleve.html" %}
+
+{% block titre %}Mon espace{% endblock %}
+
+{% block contenu %}
+<section class="conteneur pile" aria-labelledby="titre-espace">
+    <h1 id="titre-espace">Bonjour {{ g.eleve.prenom }}</h1>
+    <p class="texte-secondaire">Votre bulletin sera affiché ici.</p>
+</section>
+{% endblock %}

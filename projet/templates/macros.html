@@ -29,3 +29,14 @@
 {% if valeur is none %}<span class="note note-vide">—</span>
 {%- else %}<span class="note{% if valeur < 10 %} note-faible{% endif %}">{{ valeur|note }}</span>{% endif %}
 {%- endmacro %}
+
+{# Badge du statut d'une évaluation #}
+{% macro badge_statut(etat, libelle) -%}
+{% set couleurs = {"planifiee": "", "a_saisir": "badge-ambre", "en_cours": "badge-bleu", "complete": "badge-vert", "cloturee": "badge-sombre"} -%}
+<span class="badge {{ couleurs.get(etat, '') }}">{% if etat == "cloturee" %}{{ icone("cadenas", "icone-petite") }}{% endif %}{{ libelle }}</span>
+{%- endmacro %}
+
+{# Jauge de progression (valeur sur total) : élément <progress> natif #}
+{% macro jauge(valeur, total, classe="") -%}
+<progress class="jauge {{ classe }}" value="{{ valeur }}" max="{{ total or 1 }}">{{ valeur }} sur {{ total }}</progress>
+{%- endmacro %}
