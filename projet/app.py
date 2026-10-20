@@ -22,7 +22,8 @@ import calculs
 DOSSIER = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
-app.config["CHEMIN_BASE"] = os.path.join(DOSSIER, "projet.db")
+# La variable PORTAIL_BASE permet de travailler sur une autre base (copie de test)
+app.config["CHEMIN_BASE"] = os.environ.get("PORTAIL_BASE", os.path.join(DOSSIER, "projet.db"))
 # Clé secrète des sessions : à remplacer en production par une valeur gardée secrète
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "portail-notes-cle-de-developpement-2026")
 app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024  # fichiers envoyés : 2 Mo au maximum
@@ -36,9 +37,11 @@ FILIERES = {
     "F4": "Génie civil",
 }
 NOMBRE_SEQUENCES = 6
+LIGNES_PAR_PAGE = 20
 
 MOTIF_MATRICULE = re.compile(r"^LT[0-9]{2}-F[0-9]-[0-9]{4}$")
 MOTIF_CODE = re.compile(r"^[0-9]{6}$")
+MOTIF_NOTE = re.compile(r"^[0-9]{1,2}([.,][0-9]{1,2})?$")
 
 # Limitation des essais de connexion : {identifiant: [nombre d'échecs, heure du premier échec]}
 ESSAIS_MAX = 5
@@ -103,6 +106,18 @@ def format_note(valeur):
     if valeur is None:
         return "—"
     return f"{valeur:.2f}".replace(".", ",")
+
+
+@app.template_filter("zip")
+def associer(premiere, seconde):
+    """Associe deux listes deux à deux (options des listes déroulantes)."""
+    return list(zip(premiere, seconde))
+
+
+@app.template_filter("libelle_sequence")
+def libelle_sequence(numero):
+    """« Séquence 3 »."""
+    return f"Séquence {numero}"
 
 
 @app.template_filter("date_fr")
@@ -437,6 +452,331 @@ def tableau_de_bord():
     return render_template("enseignant/tableau_de_bord.html", matieres=matieres,
                            a_traiter=a_traiter, a_venir=a_venir, chiffres=chiffres,
                            nombre_evaluations=len(evaluations))
+
+
+# --- Lecture et vérification des saisies -------------------------------------
+
+def lire_note(texte):
+    """Convertit une saisie (« 12,5 ») en note ; renvoie (note ou None, message d'erreur ou None)."""
+    texte = (texte or "").strip()
+    if texte == "":
+        return None, None
+    if not MOTIF_NOTE.match(texte):
+        return None, "Saisissez un nombre, par exemple 12,5."
+    note = float(texte.replace(",", "."))
+    if not 0 <= note <= 20:
+        return None, "La note doit être comprise entre 0 et 20."
+    return note, None
+
+
+def lire_entier(texte):
+    """Convertit une saisie en entier, ou None si ce n'est pas un entier."""
+    try:
+        return int(texte)
+    except (TypeError, ValueError):
+        return None
+
+
+def lire_date(texte):
+    """Vérifie une date AAAA-MM-JJ ; renvoie la date ISO ou None."""
+    try:
+        return date.fromisoformat((texte or "").strip()).isoformat()
+    except ValueError:
+        return None
+
+
+def paginer(nombre_total, par_page=LIGNES_PAR_PAGE):
+    """Calcule la page demandée (?page=N) : numéro, nombre de pages, bornes des lignes affichées."""
+    pages = max(1, -(-nombre_total // par_page))  # division arrondie vers le haut
+    page = min(max(lire_entier(request.args.get("page")) or 1, 1), pages)
+    debut = (page - 1) * par_page
+    return {"page": page, "pages": pages, "total": nombre_total,
+            "debut": debut, "fin": min(debut + par_page, nombre_total)}
+
+
+def adresse_de_retour(defaut):
+    """Adresse de retour fournie dans l'URL, acceptée seulement si elle reste sur le site."""
+    retour = request.values.get("retour", "")
+    if retour.startswith("/") and not retour.startswith("//"):
+        return retour
+    return defaut
+
+
+# --- Évaluations, saisie et correction des notes ------------------------------
+
+def est_admin():
+    """Vrai si l'enseignant connecté est administrateur."""
+    return g.enseignant is not None and g.enseignant["role"] == "administrateur"
+
+
+def charger_evaluation(evaluation_id):
+    """Évaluation demandée, si elle existe (404) et si l'enseignant y a droit (403)."""
+    trouvees = evaluations_avec_progression("AND ev.id = ?", (evaluation_id,))
+    if not trouvees:
+        abort(404)
+    evaluation = trouvees[0]
+    if not est_admin() and evaluation["enseignant_id"] != g.enseignant["id"]:
+        abort(403)
+    return evaluation
+
+
+def matieres_autorisees():
+    """Matières que l'enseignant connecté peut évaluer (toutes pour l'administrateur)."""
+    if est_admin():
+        return get_db().execute("SELECT * FROM matieres ORDER BY nom").fetchall()
+    return get_db().execute("SELECT * FROM matieres WHERE enseignant_id = ? ORDER BY nom",
+                            (g.enseignant["id"],)).fetchall()
+
+
+ETATS_EVALUATION = {
+    "planifiee": "Planifiée", "a_saisir": "À saisir", "en_cours": "En cours",
+    "complete": "Complète", "cloturee": "Clôturée",
+}
+
+
+@app.route("/enseignant/evaluations", methods=["GET", "POST"])
+@connexion_requise
+def evaluations():
+    """Liste filtrable des évaluations et création d'une nouvelle évaluation."""
+    db = get_db()
+    classes = db.execute("SELECT * FROM classes ORDER BY niveau, nom").fetchall()
+    matieres = matieres_autorisees()
+    erreurs = {}
+    saisie = {}
+
+    if request.method == "POST":
+        saisie = request.form.to_dict()
+        classe_id = lire_entier(saisie.get("classe_id"))
+        matiere_id = lire_entier(saisie.get("matiere_id"))
+        sequence = lire_entier(saisie.get("sequence"))
+        intitule = saisie.get("intitule", "").strip()
+        date_evaluation = lire_date(saisie.get("date_evaluation"))
+        if classe_id not in [c["id"] for c in classes]:
+            erreurs["classe_id"] = "Choisissez une classe."
+        if matiere_id not in [m["id"] for m in matieres]:
+            erreurs["matiere_id"] = "Choisissez une de vos matières."
+        if sequence is None or not 1 <= sequence <= NOMBRE_SEQUENCES:
+            erreurs["sequence"] = "La séquence va de 1 à 6."
+        if not 3 <= len(intitule) <= 80:
+            erreurs["intitule"] = "L'intitulé doit faire entre 3 et 80 caractères."
+        if date_evaluation is None:
+            erreurs["date_evaluation"] = "Saisissez une date valide."
+        if not erreurs:
+            try:
+                with db:
+                    db.execute(
+                        "INSERT INTO evaluations (classe_id, matiere_id, sequence, intitule, date_evaluation) "
+                        "VALUES (?, ?, ?, ?, ?)",
+                        (classe_id, matiere_id, sequence, intitule, date_evaluation))
+                flash("Évaluation créée.", "succes")
+                return redirect(url_for("evaluations"))
+            except sqlite3.IntegrityError:
+                erreurs["sequence"] = ("Cette classe a déjà une évaluation de cette matière "
+                                       "pour cette séquence.")
+        flash("L'évaluation n'a pas été créée : corrigez les champs signalés.", "erreur")
+
+    # Filtres de la liste (paramètres GET)
+    filtre_classe = lire_entier(request.args.get("classe"))
+    filtre_sequence = lire_entier(request.args.get("sequence"))
+    filtre_statut = request.args.get("statut", "")
+    filtre_matiere = lire_entier(request.args.get("matiere"))
+    conditions = ""
+    parametres = []
+    if not est_admin():
+        conditions += " AND m.enseignant_id = ?"
+        parametres.append(g.enseignant["id"])
+    toutes = evaluations_avec_progression(conditions, tuple(parametres))
+    if filtre_classe:
+        conditions += " AND ev.classe_id = ?"
+        parametres.append(filtre_classe)
+    if filtre_sequence:
+        conditions += " AND ev.sequence = ?"
+        parametres.append(filtre_sequence)
+    if filtre_matiere:
+        conditions += " AND ev.matiere_id = ?"
+        parametres.append(filtre_matiere)
+    liste = evaluations_avec_progression(conditions, tuple(parametres))
+    if filtre_statut in ETATS_EVALUATION:
+        liste = [e for e in liste if e["etat"] == filtre_statut]
+    pagination = paginer(len(liste))
+    liste = liste[pagination["debut"]:pagination["fin"]]
+
+    # Bande des six séquences : état global de chaque séquence
+    bande = []
+    for numero in range(1, NOMBRE_SEQUENCES + 1):
+        de_la_sequence = [e for e in toutes if e["sequence"] == numero]
+        if de_la_sequence and all(e["etat"] == "cloturee" for e in de_la_sequence):
+            etat = ("cloturee", "Clôturée")
+        elif any(e["etat"] in ("en_cours", "complete", "a_saisir") for e in de_la_sequence):
+            etat = ("en_cours", "En cours")
+        elif de_la_sequence:
+            etat = ("planifiee", "Planifiée")
+        else:
+            etat = ("vide", "À venir")
+        bande.append({"numero": numero, "etat": etat[0], "libelle": etat[1], "nombre": len(de_la_sequence)})
+
+    return render_template(
+        "enseignant/evaluations.html", evaluations=liste, classes=classes, matieres=matieres,
+        bande=bande, etats=ETATS_EVALUATION, erreurs=erreurs, saisie=saisie,
+        filtres={"classe": filtre_classe, "sequence": filtre_sequence, "statut": filtre_statut,
+                 "matiere": filtre_matiere},
+        pagination=pagination,
+        aujourdhui=date.today().isoformat(), nombre_sequences=NOMBRE_SEQUENCES,
+    ), 400 if erreurs else 200
+
+
+@app.route("/enseignant/evaluations/<int:evaluation_id>/saisie", methods=["GET", "POST"])
+@connexion_requise
+def saisie_notes(evaluation_id):
+    """Saisie des notes d'une matière pour toute une classe, sur une seule page."""
+    evaluation = charger_evaluation(evaluation_id)
+    db = get_db()
+    eleves = db.execute(
+        "SELECT e.id, e.matricule, e.nom, e.prenom, n.id AS note_id, n.note "
+        "FROM eleves e LEFT JOIN notes n "
+        "  ON n.eleve_id = e.id AND n.matiere_id = ? AND n.sequence = ? "
+        "WHERE e.classe_id = ? ORDER BY e.nom, e.prenom",
+        (evaluation["matiere_id"], evaluation["sequence"], evaluation["classe_id"])).fetchall()
+    date_atteinte = evaluation["date_evaluation"] <= date.today().isoformat()
+    saisie_ouverte = evaluation["statut"] == "ouverte" and date_atteinte
+    erreurs = {}
+    valeurs = {}
+
+    if request.method == "POST":
+        if not saisie_ouverte:
+            flash("La saisie n'est pas ouverte pour cette évaluation.", "erreur")
+            return redirect(url_for("saisie_notes", evaluation_id=evaluation_id))
+        nouvelles = []
+        for eleve in eleves:
+            if eleve["note"] is not None:
+                continue  # une note existante ne se modifie que par une correction
+            texte = request.form.get(f"note_{eleve['id']}", "")
+            valeurs[eleve["id"]] = texte
+            note, erreur = lire_note(texte)
+            if erreur:
+                erreurs[eleve["id"]] = erreur
+            elif note is not None:
+                nouvelles.append((eleve["id"], evaluation["matiere_id"], evaluation["sequence"],
+                                  note, date.today().isoformat()))
+        if erreurs:
+            flash(f"{len(erreurs)} note(s) refusée(s) : aucune note n'a été enregistrée.", "erreur")
+        elif not nouvelles:
+            flash("Aucune nouvelle note à enregistrer.", "info")
+        else:
+            try:
+                with db:  # tout ou rien : une transaction pour toutes les notes
+                    db.executemany(
+                        "INSERT INTO notes (eleve_id, matiere_id, sequence, note, date_saisie) "
+                        "VALUES (?, ?, ?, ?, ?)", nouvelles)
+                flash(f"{len(nouvelles)} note(s) enregistrée(s).", "succes")
+            except sqlite3.IntegrityError:
+                flash("Une de ces notes a déjà été saisie entre-temps : rien n'a été enregistré.", "erreur")
+            return redirect(url_for("saisie_notes", evaluation_id=evaluation_id))
+
+    existantes = [e["note"] for e in eleves if e["note"] is not None]
+    synthese = {
+        "moyenne": calculs.moyenne_simple(existantes),
+        "saisies": len(existantes),
+        "plus_forte": max(existantes) if existantes else None,
+        "plus_faible": min(existantes) if existantes else None,
+    }
+    return render_template("enseignant/saisie.html", evaluation=evaluation, eleves=eleves,
+                           erreurs=erreurs, valeurs=valeurs, synthese=synthese,
+                           saisie_ouverte=saisie_ouverte, date_atteinte=date_atteinte), \
+        400 if erreurs else 200
+
+
+@app.route("/enseignant/evaluations/<int:evaluation_id>/cloturer", methods=["POST"])
+@connexion_requise
+def cloturer_evaluation(evaluation_id):
+    """Clôture une évaluation dont toutes les notes sont saisies."""
+    evaluation = charger_evaluation(evaluation_id)
+    if evaluation["saisies"] < evaluation["effectif"]:
+        flash("Toutes les notes doivent être saisies avant la clôture.", "erreur")
+    else:
+        with get_db() as db:
+            db.execute("UPDATE evaluations SET statut = 'cloturee' WHERE id = ?", (evaluation_id,))
+        flash("Évaluation clôturée : les notes ne se modifient plus que par correction.", "succes")
+    return redirect(url_for("saisie_notes", evaluation_id=evaluation_id))
+
+
+@app.route("/enseignant/evaluations/<int:evaluation_id>/rouvrir", methods=["POST"])
+@admin_requis
+def rouvrir_evaluation(evaluation_id):
+    """Rouvre une évaluation clôturée (administrateur uniquement)."""
+    charger_evaluation(evaluation_id)
+    with get_db() as db:
+        db.execute("UPDATE evaluations SET statut = 'ouverte' WHERE id = ?", (evaluation_id,))
+    flash("Évaluation rouverte.", "succes")
+    return redirect(url_for("saisie_notes", evaluation_id=evaluation_id))
+
+
+@app.route("/enseignant/evaluations/<int:evaluation_id>/supprimer", methods=["POST"])
+@connexion_requise
+def supprimer_evaluation(evaluation_id):
+    """Supprime une évaluation qui n'a encore aucune note."""
+    evaluation = charger_evaluation(evaluation_id)
+    if evaluation["saisies"] > 0:
+        flash("Impossible de supprimer une évaluation qui contient des notes.", "erreur")
+        return redirect(url_for("saisie_notes", evaluation_id=evaluation_id))
+    with get_db() as db:
+        db.execute("DELETE FROM evaluations WHERE id = ?", (evaluation_id,))
+    flash("Évaluation supprimée.", "succes")
+    return redirect(url_for("evaluations"))
+
+
+@app.route("/enseignant/notes/<int:note_id>/correction", methods=["GET", "POST"])
+@connexion_requise
+def corriger_note(note_id):
+    """Correction motivée d'une note déjà saisie ; l'historique est conservé."""
+    db = get_db()
+    note = db.execute(
+        "SELECT n.*, e.nom, e.prenom, e.matricule, e.classe_id, c.nom AS classe_nom, "
+        "       m.nom AS matiere_nom, m.enseignant_id "
+        "FROM notes n JOIN eleves e ON e.id = n.eleve_id JOIN classes c ON c.id = e.classe_id "
+        "JOIN matieres m ON m.id = n.matiere_id WHERE n.id = ?", (note_id,)).fetchone()
+    if note is None:
+        abort(404)
+    if not est_admin() and note["enseignant_id"] != g.enseignant["id"]:
+        abort(403)
+    evaluation = db.execute(
+        "SELECT id FROM evaluations WHERE classe_id = ? AND matiere_id = ? AND sequence = ?",
+        (note["classe_id"], note["matiere_id"], note["sequence"])).fetchone()
+    retour = adresse_de_retour(url_for("saisie_notes", evaluation_id=evaluation["id"])
+                               if evaluation else url_for("evaluations"))
+    erreurs = {}
+    saisie = {}
+
+    if request.method == "POST":
+        saisie = request.form.to_dict()
+        nouvelle, erreur = lire_note(saisie.get("nouvelle_note"))
+        motif = saisie.get("motif", "").strip()
+        if erreur:
+            erreurs["nouvelle_note"] = erreur
+        elif nouvelle is None:
+            erreurs["nouvelle_note"] = "Saisissez la nouvelle note."
+        elif nouvelle == note["note"]:
+            erreurs["nouvelle_note"] = "La nouvelle note est identique à l'ancienne."
+        if not 5 <= len(motif) <= 200:
+            erreurs["motif"] = "Le motif doit faire entre 5 et 200 caractères."
+        if not erreurs:
+            with db:
+                db.execute(
+                    "INSERT INTO corrections (note_id, ancienne_note, nouvelle_note, motif, "
+                    "enseignant_id, date_correction) VALUES (?, ?, ?, ?, ?, ?)",
+                    (note_id, note["note"], nouvelle, motif, g.enseignant["id"], date.today().isoformat()))
+                db.execute("UPDATE notes SET note = ?, date_saisie = ? WHERE id = ?",
+                           (nouvelle, date.today().isoformat(), note_id))
+            flash(f"Note de {note['nom']} {note['prenom']} corrigée : "
+                  f"{format_note(note['note'])} → {format_note(nouvelle)}.", "succes")
+            return redirect(retour)
+        flash("La correction n'a pas été enregistrée.", "erreur")
+
+    historique = db.execute(
+        "SELECT co.*, en.nom AS auteur FROM corrections co JOIN enseignants en ON en.id = co.enseignant_id "
+        "WHERE co.note_id = ? ORDER BY co.id DESC", (note_id,)).fetchall()
+    return render_template("enseignant/correction.html", note=note, historique=historique,
+                           erreurs=erreurs, saisie=saisie, retour=retour), 400 if erreurs else 200
 
 
 # --- Pages d'erreur ----------------------------------------------------------

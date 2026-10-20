@@ -1,0 +1,84 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, csrf, champ, champ_liste, badge_statut, jauge, paginer with context %}
+
+{% block titre %}Évaluations{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <span class="fil">{{ "Toutes les évaluations" if g.enseignant.role == "administrateur" else "Mes évaluations" }}</span>
+        <h1>Évaluations</h1>
+    </div>
+    <a class="bouton bouton-principal" href="#nouvelle-evaluation">{{ icone("plus") }}Nouvelle évaluation</a>
+</div>
+
+<section class="bande-sequences" aria-label="État des séquences">
+    {% for s in bande %}
+    <a class="sequence-carte sequence-{{ s.etat }}" href="{{ url_for('evaluations', sequence=s.numero) }}"{% if filtres.sequence == s.numero %} aria-current="true"{% endif %}>
+        <span class="gras">Séquence {{ s.numero }}</span>
+        <span class="texte-tres-petit texte-secondaire">{{ s.nombre }} évaluation{{ "s" if s.nombre > 1 }}</span>
+        <span class="sequence-etat">{{ s.libelle }}</span>
+    </a>
+    {% endfor %}
+</section>
+
+<div class="disposition">
+    <section class="carte carte-sans-marge zone-principale" aria-labelledby="titre-liste">
+        <h2 id="titre-liste" class="visuellement-cache">Liste des évaluations</h2>
+        <form class="barre-filtres barre-filtres-integree" method="get" action="{{ url_for('evaluations') }}" data-envoi-auto>
+            {{ champ_liste("classe", "Classe", classes|map(attribute="id")|zip(classes|map(attribute="nom")), filtres.classe or "", vide="Toutes les classes", prefixe="filtre") }}
+            {{ champ_liste("sequence", "Séquence", range(1, nombre_sequences + 1)|map("string")|zip(range(1, nombre_sequences + 1)|map("libelle_sequence")), filtres.sequence or "", vide="Toutes", prefixe="filtre") }}
+            {% if matieres|length > 1 %}
+            {{ champ_liste("matiere", "Matière", matieres|map(attribute="id")|zip(matieres|map(attribute="nom")), filtres.matiere or "", vide="Toutes les matières", prefixe="filtre") }}
+            {% endif %}
+            {{ champ_liste("statut", "Statut", etats.items(), filtres.statut, vide="Tous les statuts", prefixe="filtre") }}
+            <button type="submit" class="bouton">{{ icone("filtre") }}Filtrer</button>
+        </form>
+        {% if evaluations %}
+        <div class="tableau-conteneur">
+            <table class="tableau">
+                <thead>
+                    <tr><th scope="col">Évaluation</th><th scope="col">Date</th><th scope="col">Notes saisies</th><th scope="col">Statut</th><th scope="col" class="actions">Action</th></tr>
+                </thead>
+                <tbody>
+                    {% for ev in evaluations %}
+                    <tr>
+                        <td><strong>{{ ev.matiere_nom }} · {{ ev.classe_nom }}</strong><span class="sous-texte">{{ ev.intitule }} · séquence {{ ev.sequence }}</span></td>
+                        <td class="chiffres">{{ ev.date_evaluation|date_fr }}</td>
+                        <td><span class="texte-petit gras chiffres">{{ ev.saisies }} / {{ ev.effectif }}</span>{{ jauge(ev.saisies, ev.effectif, "jauge-verte" if ev.etat in ("complete", "cloturee") else "") }}</td>
+                        <td>{{ badge_statut(ev.etat, ev.etat_libelle) }}</td>
+                        <td class="actions">
+                            {% set libelles = {"planifiee": "Ouvrir", "a_saisir": "Saisir les notes", "en_cours": "Continuer la saisie", "complete": "Voir et clôturer", "cloturee": "Voir les notes"} %}
+                            <a class="bouton bouton-discret" href="{{ url_for('saisie_notes', evaluation_id=ev.id) }}">{{ libelles[ev.etat] }}{{ icone("fleche-droite", "icone-petite") }}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {{ paginer(pagination, "evaluations", "évaluations") }}
+        {% else %}
+        <p class="carte-vide">{{ icone("info") }}Aucune évaluation ne correspond à ces filtres.</p>
+        {% endif %}
+    </section>
+
+    <aside class="zone-laterale pile">
+        <form id="nouvelle-evaluation" class="carte formulaire" method="post" action="{{ url_for('evaluations') }}" data-valider novalidate>
+            {{ csrf() }}
+            <h2>Nouvelle évaluation</h2>
+            {{ champ("intitule", "Intitulé", valeur=saisie.get("intitule", "Devoir surveillé"), erreur=erreurs.get("intitule"), obligatoire=True, attributs={"maxlength": "80"}) }}
+            {{ champ_liste("classe_id", "Classe", classes|map(attribute="id")|zip(classes|map(attribute="nom")), saisie.get("classe_id", ""), erreurs.get("classe_id"), obligatoire=True, vide="Choisir une classe") }}
+            <div class="grille-champs">
+                {{ champ_liste("matiere_id", "Matière", matieres|map(attribute="id")|zip(matieres|map(attribute="nom")), saisie.get("matiere_id", matieres[0].id if matieres|length == 1 else ""), erreurs.get("matiere_id"), obligatoire=True, vide=None if matieres|length == 1 else "Choisir") }}
+                {{ champ_liste("sequence", "Séquence", range(1, nombre_sequences + 1)|map("string")|zip(range(1, nombre_sequences + 1)|map("libelle_sequence")), saisie.get("sequence", ""), erreurs.get("sequence"), obligatoire=True, vide="Choisir") }}
+            </div>
+            {{ champ("date_evaluation", "Date", type="date", valeur=saisie.get("date_evaluation", aujourdhui), erreur=erreurs.get("date_evaluation"), obligatoire=True) }}
+            <button type="submit" class="bouton bouton-principal bouton-grand">{{ icone("plus") }}Créer l'évaluation</button>
+        </form>
+        <div class="encadre encadre-info">
+            {{ icone("info") }}
+            <span><strong>Une évaluation par classe, matière et séquence.</strong> Elle fournit la note de séquence. Une fois clôturée, une note ne se modifie plus que par une correction motivée.</span>
+        </div>
+    </aside>
+</div>
+{% endblock %}

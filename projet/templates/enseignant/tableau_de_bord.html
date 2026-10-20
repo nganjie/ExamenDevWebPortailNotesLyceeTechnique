@@ -32,12 +32,13 @@
 <section class="carte carte-sans-marge" aria-labelledby="titre-a-traiter">
     <div class="carte-entete">
         <h2 id="titre-a-traiter">Évaluations à traiter</h2>
+        <a class="bouton bouton-discret" href="{{ url_for('evaluations') }}">Toutes les évaluations{{ icone("fleche-droite", "icone-petite") }}</a>
     </div>
     {% if a_traiter %}
     <div class="tableau-conteneur">
         <table class="tableau">
             <thead>
-                <tr><th scope="col">Évaluation</th><th scope="col">Date</th><th scope="col">Notes saisies</th><th scope="col">Statut</th></tr>
+                <tr><th scope="col">Évaluation</th><th scope="col">Date</th><th scope="col">Notes saisies</th><th scope="col">Statut</th><th scope="col" class="actions">Action</th></tr>
             </thead>
             <tbody>
                 {% for ev in a_traiter %}
@@ -46,6 +47,7 @@
                     <td class="chiffres">{{ ev.date_evaluation|date_fr }}</td>
                     <td><span class="texte-petit gras chiffres">{{ ev.saisies }} / {{ ev.effectif }}</span>{{ jauge(ev.saisies, ev.effectif) }}</td>
                     <td>{{ badge_statut(ev.etat, ev.etat_libelle) }}</td>
+                    <td class="actions"><a class="bouton bouton-discret" href="{{ url_for('saisie_notes', evaluation_id=ev.id) }}">Saisir{{ icone("fleche-droite", "icone-petite") }}</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -61,7 +63,7 @@
     <h2 id="titre-a-venir">Prochaines évaluations</h2>
     <ul class="liste-simple">
         {% for ev in a_venir %}
-        <li>{{ icone("calendrier", "icone-petite") }}<span><strong>{{ ev.date_evaluation|date_fr }}</strong> · {{ ev.matiere_nom }} · {{ ev.classe_nom }} · {{ ev.intitule }}</span></li>
+        <li>{{ icone("calendrier", "icone-petite") }}<span><strong>{{ ev.date_evaluation|date_fr }}</strong> · <a href="{{ url_for('saisie_notes', evaluation_id=ev.id) }}">{{ ev.matiere_nom }} · {{ ev.classe_nom }}</a> · {{ ev.intitule }}</span></li>
         {% endfor %}
     </ul>
 </section>

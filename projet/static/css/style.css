@@ -505,3 +505,42 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
     .tableau-adaptatif .masquer-mobile { display: none; }
     .tableau-adaptatif tfoot td { color: var(--texte); }
 }
+
+/* ---------- Évaluations et saisie des notes ---------- */
+.bande-sequences { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.sequence-carte {
+    display: flex; flex-direction: column; gap: 2px; padding: 12px 14px;
+    border: 2px solid var(--bordure); border-radius: 12px; background: var(--surface);
+    color: var(--texte); text-decoration: none;
+}
+.sequence-carte:hover { border-color: var(--bordure-forte); color: var(--texte); }
+.sequence-carte[aria-current="true"] { border-color: var(--bleu); }
+.sequence-etat { font-size: 12px; font-weight: 700; color: var(--texte-3); }
+.sequence-en_cours .sequence-etat { color: var(--bleu); }
+.sequence-cloturee .sequence-etat { color: var(--texte-2); }
+.sequence-vide { color: var(--texte-3); }
+.barre-filtres-integree { border: 0; border-bottom: 1px solid var(--bordure); border-radius: 0; }
+input.case-note {
+    width: 96px; min-height: 42px; padding: 0 8px; border-width: 2px;
+    font-weight: 600; text-align: center; font-variant-numeric: tabular-nums;
+}
+.tableau-saisie td, .tableau-saisie th { padding-top: 8px; padding-bottom: 8px; }
+.en-direct { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 600; color: var(--vert); }
+.en-direct::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: #10B981; }
+.texte-bleu { color: var(--bleu); font-size: 46px; }
+.grille-synthese { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.mini-indicateur { display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: var(--rayon); background: var(--fond-2); font-size: 14px; }
+.mini-indicateur .gras { font-size: 18px; }
+.mini-indicateur-erreur { background: var(--rouge-clair); }
+.mini-indicateur-erreur [data-nombre-erreurs] { color: var(--rouge); }
+.encadre-neutre { background: var(--fond-2); border-color: var(--bordure); color: var(--texte); }
+.fil { display: inline-flex; gap: 6px; align-items: center; }
+
+/* ---------- Pagination ---------- */
+.pagination { display: flex; flex-wrap: wrap; gap: 6px; }
+.pagination a {
+    display: inline-flex; width: 40px; height: 40px; align-items: center; justify-content: center;
+    border: 1px solid var(--bordure); border-radius: 8px; color: var(--texte); font-weight: 600; text-decoration: none;
+}
+.pagination a:hover { background: var(--fond-3); }
+.pagination a[aria-current="page"] { border-color: var(--encre); background: var(--encre); color: #FFFFFF; }

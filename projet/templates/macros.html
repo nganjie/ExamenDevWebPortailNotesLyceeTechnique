@@ -40,3 +40,34 @@
 {% macro jauge(valeur, total, classe="") -%}
 <progress class="jauge {{ classe }}" value="{{ valeur }}" max="{{ total or 1 }}">{{ valeur }} sur {{ total }}</progress>
 {%- endmacro %}
+
+{# Liste déroulante : options = [(valeur, texte), ...] #}
+{% macro champ_liste(nom, libelle, options, choisi="", erreur=None, obligatoire=False, vide=None, aide=None, prefixe="champ") -%}
+<div class="champ">
+    <label for="{{ prefixe }}-{{ nom }}">{{ libelle }}{% if obligatoire %} <span class="champ-obligatoire" aria-hidden="true">*</span>{% endif %}</label>
+    <select id="{{ prefixe }}-{{ nom }}" name="{{ nom }}"{% if obligatoire %} required{% endif %}{% if erreur %} aria-invalid="true"{% endif %} aria-describedby="{% if aide %}{{ prefixe }}-{{ nom }}-aide {% endif %}{{ prefixe }}-{{ nom }}-erreur">
+        {% if vide %}<option value="">{{ vide }}</option>{% endif %}
+        {% for valeur, texte in options %}
+        <option value="{{ valeur }}"{% if valeur|string == choisi|string %} selected{% endif %}>{{ texte }}</option>
+        {% endfor %}
+    </select>
+    {% if aide %}<span id="{{ prefixe }}-{{ nom }}-aide" class="champ-aide">{{ aide }}</span>{% endif %}
+    <span id="{{ prefixe }}-{{ nom }}-erreur" class="champ-erreur"{% if not erreur %} hidden{% endif %}>{{ icone("alerte", "icone-petite") }}<span class="champ-erreur-texte">{{ erreur or "" }}</span></span>
+</div>
+{%- endmacro %}
+
+{# Pagination : conserve les autres paramètres de l'URL #}
+{% macro paginer(pagination, endpoint, libelle="éléments") -%}
+<div class="carte-pied">
+    <span>{{ libelle|capitalize }} {{ pagination.debut + 1 if pagination.total else 0 }} à {{ pagination.fin }} sur {{ pagination.total }}</span>
+    {% if pagination.pages > 1 %}
+    <nav class="pagination" aria-label="Pagination">
+        {% set parametres = request.args.to_dict() %}
+        {% for numero in range(1, pagination.pages + 1) %}
+        {% set _ = parametres.update({"page": numero}) %}
+        <a href="{{ url_for(endpoint, **parametres) }}"{% if numero == pagination.page %} aria-current="page"{% endif %} aria-label="Page {{ numero }}">{{ numero }}</a>
+        {% endfor %}
+    </nav>
+    {% endif %}
+</div>
+{%- endmacro %}

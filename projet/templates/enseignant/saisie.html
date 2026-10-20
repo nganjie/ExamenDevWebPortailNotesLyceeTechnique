@@ -1,0 +1,109 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, csrf, badge_statut, badge_note with context %}
+
+{% block titre %}Saisie · {{ evaluation.matiere_nom }} · {{ evaluation.classe_nom }}{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <a class="fil" href="{{ url_for('evaluations') }}">{{ icone("fleche-gauche", "icone-petite") }}Toutes les évaluations</a>
+        <h1>{{ evaluation.matiere_nom }} · {{ evaluation.classe_nom }} · Séquence {{ evaluation.sequence }}</h1>
+        <span class="ligne texte-secondaire texte-petit">{{ evaluation.intitule }} · {{ evaluation.date_evaluation|date_fr }} · coefficient {{ evaluation.coefficient }} {{ badge_statut(evaluation.etat, evaluation.etat_libelle) }}</span>
+    </div>
+    <div class="ligne">
+        {% if evaluation.statut == "cloturee" and g.enseignant.role == "administrateur" %}
+        <form method="post" action="{{ url_for('rouvrir_evaluation', evaluation_id=evaluation.id) }}" class="formulaire-en-ligne" data-confirmer="Rouvrir cette évaluation pour la saisie ?">
+            {{ csrf() }}<button type="submit" class="bouton">{{ icone("historique") }}Rouvrir</button>
+        </form>
+        {% endif %}
+        {% if evaluation.etat == "complete" %}
+        <form method="post" action="{{ url_for('cloturer_evaluation', evaluation_id=evaluation.id) }}" class="formulaire-en-ligne" data-confirmer="Clôturer l'évaluation ? Les notes ne se modifieront plus que par correction.">
+            {{ csrf() }}<button type="submit" class="bouton bouton-sombre">{{ icone("cadenas") }}Clôturer</button>
+        </form>
+        {% endif %}
+        {% if evaluation.saisies == 0 %}
+        <form method="post" action="{{ url_for('supprimer_evaluation', evaluation_id=evaluation.id) }}" class="formulaire-en-ligne" data-confirmer="Supprimer définitivement cette évaluation ?">
+            {{ csrf() }}<button type="submit" class="bouton bouton-danger">{{ icone("croix") }}Supprimer</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if not date_atteinte %}
+<div class="encadre encadre-avertissement">{{ icone("calendrier") }}<span>Cette évaluation est prévue le {{ evaluation.date_evaluation|date_fr }} : la saisie ouvrira à cette date.</span></div>
+{% elif evaluation.statut == "cloturee" %}
+<div class="encadre encadre-info">{{ icone("cadenas") }}<span>Évaluation clôturée : utilisez « Corriger » pour modifier une note (le motif est conservé).</span></div>
+{% endif %}
+
+<form method="post" action="{{ url_for('saisie_notes', evaluation_id=evaluation.id) }}" class="disposition" id="formulaire-saisie" data-saisie novalidate>
+    {{ csrf() }}
+    <section class="carte carte-sans-marge zone-principale" aria-labelledby="titre-classe">
+        <div class="carte-entete">
+            <h2 id="titre-classe">Élèves de la classe ({{ eleves|length }})</h2>
+            <span class="texte-secondaire texte-petit">Note sur 20 · virgule ou point · cases vides ignorées</span>
+        </div>
+        <div class="tableau-conteneur">
+            <table class="tableau tableau-saisie">
+                <thead>
+                    <tr><th scope="col" class="num">N°</th><th scope="col">Élève</th><th scope="col">Matricule</th><th scope="col">Note / 20</th></tr>
+                </thead>
+                <tbody>
+                    {% for eleve in eleves %}
+                    {% set erreur = erreurs.get(eleve.id) %}
+                    <tr{% if erreur %} class="ligne-en-erreur"{% endif %}>
+                        <td class="num texte-secondaire">{{ loop.index }}</td>
+                        <th scope="row">{% if eleve.note is none and saisie_ouverte %}<label for="note-{{ eleve.id }}">{{ eleve.nom }} {{ eleve.prenom }}</label>{% else %}{{ eleve.nom }} {{ eleve.prenom }}{% endif %}</th>
+                        <td class="chiffres texte-secondaire">{{ eleve.matricule }}</td>
+                        <td>
+                            {% if eleve.note is not none %}
+                            <span class="ligne">
+                                <span data-note-existante="{{ eleve.note }}">{{ badge_note(eleve.note) }}</span>
+                                <a class="bouton bouton-discret" href="{{ url_for('corriger_note', note_id=eleve.note_id) }}" aria-label="Corriger la note de {{ eleve.nom }} {{ eleve.prenom }}">{{ icone("crayon", "icone-petite") }}Corriger</a>
+                            </span>
+                            {% elif saisie_ouverte %}
+                            <div class="pile-serree">
+                                <input id="note-{{ eleve.id }}" class="case-note" name="note_{{ eleve.id }}" type="text" inputmode="decimal"
+                                       value="{{ valeurs.get(eleve.id, '') }}" placeholder="—" autocomplete="off" maxlength="5"
+                                       aria-describedby="note-{{ eleve.id }}-erreur"{% if erreur %} aria-invalid="true"{% endif %} data-case-note>
+                                <span id="note-{{ eleve.id }}-erreur" class="champ-erreur"{% if not erreur %} hidden{% endif %}>{{ icone("alerte", "icone-petite") }}<span class="champ-erreur-texte">{{ erreur or "" }}</span></span>
+                            </div>
+                            {% else %}
+                            <span class="note note-vide">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <aside class="zone-laterale pile">
+        <section class="carte pile" aria-labelledby="titre-synthese">
+            <div class="ligne-espacee">
+                <h2 id="titre-synthese">Moyenne de la classe</h2>
+                {% if saisie_ouverte %}<span class="en-direct">En direct</span>{% endif %}
+            </div>
+            <span class="indicateur-valeur texte-bleu" data-moyenne-direct aria-live="polite">{{ synthese.moyenne|note }}</span>
+            <div class="grille-synthese">
+                <div class="mini-indicateur"><span class="texte-secondaire">Notes saisies</span><span class="gras"><span data-nombre-saisies>{{ synthese.saisies }}</span> / {{ eleves|length }}</span></div>
+                <div class="mini-indicateur" data-zone-erreurs><span class="texte-secondaire">Erreurs</span><span class="gras" data-nombre-erreurs>{{ erreurs|length }}</span></div>
+                <div class="mini-indicateur"><span class="texte-secondaire">Note max.</span><span class="gras" data-note-max>{{ synthese.plus_forte|note }}</span></div>
+                <div class="mini-indicateur"><span class="texte-secondaire">Note min.</span><span class="gras" data-note-min>{{ synthese.plus_faible|note }}</span></div>
+            </div>
+            {% if saisie_ouverte and synthese.saisies < eleves|length %}
+            <button type="submit" class="bouton bouton-principal bouton-grand" data-bouton-enregistrer>{{ icone("coche") }}Enregistrer les notes</button>
+            <p class="texte-tres-petit texte-secondaire" data-message-bouton aria-live="polite"></p>
+            {% endif %}
+        </section>
+        <div class="encadre encadre-info">
+            {{ icone("bouclier") }}
+            <span>Chaque note est revérifiée par le serveur. Si une seule note est refusée, aucune n'est enregistrée. Une note déjà saisie se modifie avec « Corriger ».</span>
+        </div>
+    </aside>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/saisie.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, csrf, champ with context %}
+
+{% block titre %}Corriger une note{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <a class="fil" href="{{ retour }}">{{ icone("fleche-gauche", "icone-petite") }}Retour</a>
+        <h1>Corriger une note</h1>
+    </div>
+</div>
+
+<div class="disposition">
+    <form class="carte formulaire zone-laterale" method="post" action="{{ url_for('corriger_note', note_id=note.id) }}" data-valider novalidate>
+        {{ csrf() }}
+        <input type="hidden" name="retour" value="{{ retour }}">
+        <div class="encadre encadre-neutre">
+            <span class="pile-serree">
+                <strong>{{ note.nom }} {{ note.prenom }}</strong>
+                <span class="texte-secondaire texte-petit">{{ note.matricule }} · {{ note.classe_nom }}</span>
+                <span class="texte-secondaire texte-petit">{{ note.matiere_nom }} · séquence {{ note.sequence }}</span>
+            </span>
+        </div>
+        <div class="grille-champs">
+            <div class="champ">
+                <label for="champ-ancienne">Note actuelle</label>
+                <input id="champ-ancienne" type="text" value="{{ note.note|note }}" readonly>
+            </div>
+            {{ champ("nouvelle_note", "Nouvelle note", valeur=saisie.get("nouvelle_note", ""), erreur=erreurs.get("nouvelle_note"), obligatoire=True,
+                     attributs={"inputmode": "decimal", "maxlength": "5", "min": "0", "max": "20", "data-nombre": "",
+                                "data-message-bornes": "La note doit être comprise entre 0 et 20.", "autocomplete": "off"}) }}
+        </div>
+        <div class="champ">
+            <label for="champ-motif">Motif de la correction <span class="champ-obligatoire" aria-hidden="true">*</span></label>
+            <textarea id="champ-motif" name="motif" rows="3" maxlength="200" required aria-describedby="champ-motif-erreur"{% if erreurs.get("motif") %} aria-invalid="true"{% endif %}
+                      data-message-requis="Indiquez le motif de la correction.">{{ saisie.get("motif", "") }}</textarea>
+            <span id="champ-motif-erreur" class="champ-erreur"{% if not erreurs.get("motif") %} hidden{% endif %}>{{ icone("alerte", "icone-petite") }}<span class="champ-erreur-texte">{{ erreurs.get("motif", "") }}</span></span>
+        </div>
+        <button type="submit" class="bouton bouton-principal bouton-grand">{{ icone("crayon") }}Enregistrer la correction</button>
+    </form>
+
+    <section class="carte carte-sans-marge zone-principale" aria-labelledby="titre-historique">
+        <div class="carte-entete"><h2 id="titre-historique">Historique des corrections</h2></div>
+        {% if historique %}
+        <div class="tableau-conteneur">
+            <table class="tableau">
+                <thead><tr><th scope="col">Date</th><th scope="col" class="num">Avant</th><th scope="col" class="num">Après</th><th scope="col">Motif</th><th scope="col">Par</th></tr></thead>
+                <tbody>
+                    {% for c in historique %}
+                    <tr>
+                        <td class="chiffres">{{ c.date_correction|date_fr }}</td>
+                        <td class="num">{{ c.ancienne_note|note }}</td>
+                        <td class="num gras">{{ c.nouvelle_note|note }}</td>
+                        <td>{{ c.motif }}</td>
+                        <td>{{ c.auteur }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="carte-vide">{{ icone("info") }}Cette note n'a jamais été corrigée.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
