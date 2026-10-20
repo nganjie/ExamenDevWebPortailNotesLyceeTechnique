@@ -1,0 +1,46 @@
+/* impression.css : bulletin imprimable proprement (chargé avec media="print"). */
+
+@page { size: A4; margin: 14mm 12mm; }
+
+body { background: #FFFFFF; color: #000000; font-size: 11pt; }
+
+/* On retire tout ce qui ne sert pas sur papier */
+.entete, .pied, .lien-evitement, .zone-messages, .masquer-impression, .message, button { display: none !important; }
+
+.conteneur { max-width: none; padding: 0; }
+.pile { gap: 10px; }
+
+.entete-impression {
+    display: flex !important; justify-content: space-between; gap: 16px;
+    padding-bottom: 8px; border-bottom: 2px solid #000000; font-size: 10pt; line-height: 1.4;
+}
+
+h1 { font-size: 16pt; }
+h2 { font-size: 12pt; }
+
+.indicateurs { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.indicateur, .indicateur-principal { padding: 8px; border: 1px solid #000000; background: #FFFFFF; color: #000000; }
+.indicateur-principal .indicateur-libelle, .indicateur-principal .indicateur-detail, .indicateur-principal .indicateur-unite { color: #000000; }
+.indicateur-valeur { font-size: 16pt; }
+
+.carte { border: 1px solid #000000; border-radius: 0; padding: 8px; }
+.carte.carte-sans-marge { padding: 0; }
+.carte-entete { padding: 6px 8px; border-bottom: 1px solid #000000; }
+
+.tableau { font-size: 10pt; }
+.tableau th, .tableau td { padding: 5px 6px; border: 1px solid #000000; }
+.tableau thead th { background: #EEEEEE; color: #000000; }
+.note, .note-faible { min-width: 0; padding: 0; background: none; color: #000000; }
+.tableau-adaptatif td::before { content: none !important; }
+
+.disposition { display: block; }
+.zone-historique { width: 60%; }
+.page { padding: 0; }
+
+.signatures {
+    display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-top: 18px; font-size: 10pt;
+}
+.signatures div { height: 70px; padding-top: 6px; border-top: 1px solid #000000; text-align: center; }
+
+tr, .indicateur { break-inside: avoid; }

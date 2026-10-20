@@ -11,8 +11,8 @@ import time
 from datetime import date
 from functools import wraps
 
-from flask import (Flask, abort, flash, g, redirect, render_template, request,
-                   session, url_for)
+from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
+                   request, session, url_for)
 from werkzeug.security import check_password_hash
 
 import calculs
@@ -268,13 +268,121 @@ def deconnexion():
     return redirect(url_for("accueil"))
 
 
+# --- Bulletins : données communes à l'élève et aux enseignants --------------
+
+def sequences_notees(classe_id):
+    """Numéros des séquences pour lesquelles la classe a au moins une note."""
+    lignes = get_db().execute(
+        "SELECT DISTINCT n.sequence FROM notes n JOIN eleves e ON e.id = n.eleve_id "
+        "WHERE e.classe_id = ? ORDER BY n.sequence", (classe_id,)).fetchall()
+    return [ligne["sequence"] for ligne in lignes]
+
+
+def donnees_bulletin(eleve, sequence):
+    """Toutes les données du bulletin d'un élève pour une séquence."""
+    db = get_db()
+    classe = calculs.bulletin_classe(db, eleve["classe_id"], sequence)
+    ligne_eleve = next(e for e in classe if e["id"] == eleve["id"])
+    moyennes_classe = [e["moyenne"] for e in classe if e["moyenne"] is not None]
+
+    matieres = db.execute(
+        "SELECT m.id, m.nom, m.coefficient, en.nom AS enseignant FROM matieres m "
+        "JOIN enseignants en ON en.id = m.enseignant_id ORDER BY m.coefficient DESC, m.nom").fetchall()
+    lignes = []
+    total_points = 0
+    total_coefficients = 0
+    for matiere in matieres:
+        note = ligne_eleve["notes"].get(matiere["id"])
+        notes_matiere = [e["notes"].get(matiere["id"]) for e in classe]
+        if note is not None:
+            total_points += note * matiere["coefficient"]
+            total_coefficients += matiere["coefficient"]
+        lignes.append({
+            "matiere": matiere["nom"],
+            "enseignant": matiere["enseignant"],
+            "coefficient": matiere["coefficient"],
+            "note": note,
+            "points": None if note is None else note * matiere["coefficient"],
+            "moyenne_classe": calculs.moyenne_simple(notes_matiere),
+            "appreciation": calculs.appreciation(note) if note is not None else "Non noté",
+        })
+
+    moyenne_classe = calculs.moyenne_simple(moyennes_classe)
+    return {
+        "sequence": sequence,
+        "lignes": lignes,
+        "total_points": total_points,
+        "total_coefficients": total_coefficients,
+        "moyenne": ligne_eleve["moyenne"],
+        "appreciation": ligne_eleve["appreciation"],
+        "rang": ligne_eleve["rang"],
+        "ex_aequo": ligne_eleve["ex_aequo"],
+        "effectif": len(classe),
+        "classes": len(moyennes_classe),
+        "moyenne_classe": moyenne_classe,
+        "ecart": None if ligne_eleve["moyenne"] is None or moyenne_classe is None
+        else calculs.arrondir(ligne_eleve["moyenne"] - moyenne_classe),
+        "plus_forte": max(moyennes_classe) if moyennes_classe else None,
+        "plus_faible": min(moyennes_classe) if moyennes_classe else None,
+    }
+
+
+def evolution_eleve(eleve):
+    """Moyenne, rang et moyenne de la classe de l'élève pour chaque séquence notée."""
+    evolution = []
+    for sequence in sequences_notees(eleve["classe_id"]):
+        classe = calculs.bulletin_classe(get_db(), eleve["classe_id"], sequence)
+        ligne = next(e for e in classe if e["id"] == eleve["id"])
+        evolution.append({
+            "sequence": sequence,
+            "moyenne": ligne["moyenne"],
+            "rang": ligne["rang"],
+            "effectif": len(classe),
+            "moyenne_classe": calculs.moyenne_simple([e["moyenne"] for e in classe]),
+        })
+    return evolution
+
+
 # --- Espace élève ---------------------------------------------------------------
 
 @app.route("/eleve")
 @eleve_requis
 def espace_eleve():
-    """Page d'arrivée de l'élève."""
-    return render_template("eleve/accueil.html")
+    """Page d'arrivée de l'élève : le bulletin de la dernière séquence notée."""
+    sequences = sequences_notees(g.eleve["classe_id"])
+    return redirect(url_for("bulletin_eleve", sequence=sequences[-1] if sequences else 1))
+
+
+@app.route("/eleve/bulletin/<int:sequence>")
+@eleve_requis
+def bulletin_eleve(sequence):
+    """Bulletin de l'élève connecté (jamais celui d'un autre : l'identifiant vient de la session)."""
+    if not 1 <= sequence <= NOMBRE_SEQUENCES:
+        abort(404)
+    sequences = sequences_notees(g.eleve["classe_id"])
+    bulletin = donnees_bulletin(g.eleve, sequence) if sequence in sequences else None
+    return render_template("eleve/bulletin.html", bulletin=bulletin, sequence=sequence,
+                           sequences=sequences, historique=evolution_eleve(g.eleve),
+                           nombre_sequences=NOMBRE_SEQUENCES)
+
+
+# --- API JSON -----------------------------------------------------------------------
+
+def erreur_json(message, code):
+    """Réponse d'erreur au format JSON pour les routes de l'API."""
+    return jsonify({"erreur": message}), code
+
+
+@app.route("/api/eleves/<int:eleve_id>/evolution")
+def api_evolution_eleve(eleve_id):
+    """Moyennes d'un élève par séquence (l'élève lui-même ou un enseignant uniquement)."""
+    if g.enseignant is None and (g.eleve is None or g.eleve["id"] != eleve_id):
+        return erreur_json("Accès refusé.", 403)
+    eleve = get_db().execute("SELECT * FROM eleves WHERE id = ?", (eleve_id,)).fetchone()
+    if eleve is None:
+        return erreur_json("Élève introuvable.", 404)
+    return jsonify({"eleve_id": eleve_id, "matricule": eleve["matricule"],
+                    "evolution": evolution_eleve(eleve)})
 
 
 # --- Espace enseignant ----------------------------------------------------------

@@ -78,7 +78,17 @@ function initialiserEnvoiAuto() {
     });
 }
 
+// Bouton « Imprimer » (bulletin)
+function initialiserImpression() {
+    document.querySelectorAll("[data-imprimer]").forEach(function (bouton) {
+        bouton.addEventListener("click", function () {
+            window.print();
+        });
+    });
+}
+
 document.querySelectorAll("[data-onglets]").forEach(initialiserOnglets);
+initialiserImpression();
 initialiserMessages();
 initialiserMenu();
 initialiserConfirmations();

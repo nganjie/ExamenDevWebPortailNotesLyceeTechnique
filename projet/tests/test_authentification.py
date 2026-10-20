@@ -104,9 +104,9 @@ class TestAuthentification(unittest.TestCase):
 
     def test_deconnexion(self):
         client = connecter_eleve()
-        self.assertEqual(client.get("/eleve").status_code, 200)
+        self.assertEqual(client.get("/eleve/bulletin/1").status_code, 200)
         client.post("/deconnexion")
-        self.assertEqual(client.get("/eleve").status_code, 302)
+        self.assertEqual(client.get("/eleve/bulletin/1").status_code, 302)
 
 
 if __name__ == "__main__":

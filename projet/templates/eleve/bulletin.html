@@ -1,0 +1,172 @@
+{% extends "layout_eleve.html" %}
+{% from "macros.html" import icone, badge_note with context %}
+
+{% block titre %}Bulletin de la séquence {{ sequence }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/impression.css') }}" media="print">
+{% endblock %}
+
+{% block contenu %}
+<div class="conteneur pile page">
+
+    {# En-tête visible uniquement à l'impression #}
+    <div class="entete-impression">
+        <div>
+            <strong>{{ nom_lycee }}</strong><br>
+            Année scolaire {{ annee_scolaire }}
+        </div>
+        <div class="droite">
+            <strong>Bulletin de notes — séquence {{ sequence }}</strong><br>
+            {{ g.eleve.nom }} {{ g.eleve.prenom }} · {{ g.eleve.matricule }}<br>
+            {{ g.eleve.classe_nom }} ({{ filieres.get(g.eleve.filiere, g.eleve.filiere) }}) · né(e) le {{ g.eleve.date_naissance|date_fr }}
+        </div>
+    </div>
+
+    <div class="entete-page">
+        <div class="entete-page-titre">
+            <span class="fil">Année scolaire {{ annee_scolaire }} · {{ g.eleve.classe_nom }} — {{ filieres.get(g.eleve.filiere, g.eleve.filiere) }}</span>
+            <h1>Bulletin de la séquence {{ sequence }}</h1>
+        </div>
+        <div class="ligne masquer-impression">
+            <nav class="selecteur-pilules" aria-label="Choix de la séquence">
+                {% for numero in range(1, nombre_sequences + 1) %}
+                    {% if numero in sequences %}
+                    <a class="pilule" href="{{ url_for('bulletin_eleve', sequence=numero) }}"{% if numero == sequence %} aria-current="page"{% endif %} aria-label="Séquence {{ numero }}">S{{ numero }}</a>
+                    {% else %}
+                    <span class="pilule pilule-inactive" title="Séquence {{ numero }} : pas encore de notes">S{{ numero }}</span>
+                    {% endif %}
+                {% endfor %}
+            </nav>
+            {% if bulletin %}
+            <button type="button" class="bouton" data-imprimer>{{ icone("imprimer") }}Imprimer</button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if not bulletin %}
+    <div class="encadre encadre-info">{{ icone("info") }}<span>Aucune note n'a encore été saisie pour la séquence {{ sequence }}.</span></div>
+    {% else %}
+    <section class="indicateurs" aria-label="Synthèse de la séquence">
+        <div class="indicateur indicateur-principal">
+            <span class="indicateur-libelle">Moyenne coefficientée</span>
+            <span class="indicateur-valeur">{{ bulletin.moyenne|note }}<span class="indicateur-unite"> / 20</span></span>
+            <span class="indicateur-detail gras">{{ bulletin.appreciation }}</span>
+        </div>
+        <div class="indicateur">
+            <span class="indicateur-libelle">Rang dans la classe</span>
+            <span class="indicateur-valeur">{{ bulletin.rang or "—" }}{% if bulletin.rang %}<sup>{{ "er" if bulletin.rang == 1 else "e" }}</sup>{% endif %}<span class="indicateur-unite"> / {{ bulletin.classes }}</span></span>
+            <span class="indicateur-detail">{% if bulletin.ex_aequo %}<span class="ex-aequo">ex æquo</span>{% else %}{{ bulletin.effectif }} élèves dans la classe{% endif %}</span>
+        </div>
+        <div class="indicateur">
+            <span class="indicateur-libelle">Moyenne de la classe</span>
+            <span class="indicateur-valeur">{{ bulletin.moyenne_classe|note }}</span>
+            {% if bulletin.ecart is not none %}
+            <span class="indicateur-detail {{ 'texte-vert' if bulletin.ecart >= 0 else 'texte-rouge' }} gras">
+                {{ "+" if bulletin.ecart >= 0 else "−" }}{{ (bulletin.ecart|abs)|note }} {{ "au-dessus" if bulletin.ecart >= 0 else "en dessous" }} de la classe
+            </span>
+            {% endif %}
+        </div>
+        <div class="indicateur">
+            <span class="indicateur-libelle">Extrêmes de la classe</span>
+            <span class="indicateur-valeur indicateur-valeur-moyenne">{{ bulletin.plus_forte|note }} · {{ bulletin.plus_faible|note }}</span>
+            <span class="indicateur-detail">Plus forte · plus faible moyenne</span>
+        </div>
+    </section>
+
+    <section class="carte carte-sans-marge" aria-labelledby="titre-notes">
+        <div class="carte-entete">
+            <h2 id="titre-notes">Notes par matière</h2>
+            <span class="texte-secondaire texte-petit">Total des coefficients : {{ bulletin.total_coefficients }}</span>
+        </div>
+        <table class="tableau tableau-adaptatif">
+            <thead>
+                <tr>
+                    <th scope="col">Matière</th>
+                    <th scope="col" class="num">Coef.</th>
+                    <th scope="col" class="num">Note / 20</th>
+                    <th scope="col" class="num">Note × coef.</th>
+                    <th scope="col" class="num">Moy. classe</th>
+                    <th scope="col">Appréciation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ligne in bulletin.lignes %}
+                <tr>
+                    <th scope="row">{{ ligne.matiere }}<span class="sous-texte">{{ ligne.enseignant }}</span></th>
+                    <td class="num" data-libelle="Coef.">{{ ligne.coefficient }}</td>
+                    <td class="num cellule-note">{{ badge_note(ligne.note) }}</td>
+                    <td class="num masquer-mobile">{{ ligne.points|note }}</td>
+                    <td class="num" data-libelle="Classe">{{ ligne.moyenne_classe|note }}</td>
+                    <td>{{ ligne.appreciation }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th scope="row">Total</th>
+                    <td class="num" data-libelle="Coef.">{{ bulletin.total_coefficients }}</td>
+                    <td class="num masquer-mobile"></td>
+                    <td class="num" data-libelle="Points">{{ bulletin.total_points|note }}</td>
+                    <td class="num masquer-mobile"></td>
+                    <td class="cellule-note">{{ bulletin.moyenne|note }} / 20</td>
+                </tr>
+            </tfoot>
+        </table>
+    </section>
+    {% endif %}
+
+    <div class="disposition">
+        <section class="carte pile zone-historique" aria-labelledby="titre-historique">
+            <h2 id="titre-historique">Historique des moyennes</h2>
+            <table class="tableau tableau-compact">
+                <thead>
+                    <tr><th scope="col">Séquence</th><th scope="col" class="num">Moyenne</th><th scope="col" class="num">Rang</th><th scope="col" class="num">Classe</th></tr>
+                </thead>
+                <tbody>
+                    {% for ligne in historique %}
+                    <tr{% if ligne.sequence == sequence %} class="ligne-surlignee"{% endif %}>
+                        <th scope="row">S{{ ligne.sequence }}<span class="visuellement-cache"> : séquence {{ ligne.sequence }}</span></th>
+                        <td class="num gras">{{ ligne.moyenne|note }}</td>
+                        <td class="num">{{ ligne.rang or "—" }}{% if ligne.rang %}<sup>{{ "er" if ligne.rang == 1 else "e" }}</sup>{% endif %}</td>
+                        <td class="num texte-secondaire">{{ ligne.moyenne_classe|note }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4">Pas encore de moyenne.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="carte pile zone-principale masquer-impression" aria-labelledby="titre-evolution">
+            <div class="ligne-espacee">
+                <h2 id="titre-evolution">Évolution</h2>
+                <ul class="legende" aria-hidden="true">
+                    <li><span class="legende-trait legende-bleu"></span>Élève</li>
+                    <li><span class="legende-trait legende-gris"></span>Classe</li>
+                    <li><span class="legende-trait legende-seuil"></span>Seuil 10</li>
+                </ul>
+            </div>
+            <div class="zone-graphique">
+                <canvas id="graphique-evolution" data-source="{{ url_for('api_evolution_eleve', eleve_id=g.eleve.id) }}"
+                        role="img" aria-label="Évolution de la moyenne de l'élève comparée à celle de la classe, séquence par séquence">
+                    {% for ligne in historique %}Séquence {{ ligne.sequence }} : {{ ligne.moyenne|note }} (classe {{ ligne.moyenne_classe|note }}). {% endfor %}
+                </canvas>
+            </div>
+            <p class="texte-secondaire texte-tres-petit" data-message-graphique>Données chargées depuis l'API du portail.</p>
+        </section>
+    </div>
+
+    {# Signatures visibles uniquement à l'impression #}
+    <div class="signatures">
+        <div>Le professeur principal</div>
+        <div>Le proviseur</div>
+        <div>Signature des parents</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vendor/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/graphique.js') }}"></script>
+{% endblock %}

@@ -126,6 +126,7 @@ img { max-width: 100%; height: auto; }
 }
 .disposition > .zone-principale { flex: 999 1 520px; min-width: 0; }
 .disposition > .zone-laterale { flex: 1 1 300px; min-width: 0; }
+.disposition > .zone-historique { flex: 1 1 380px; min-width: 0; }
 
 /* ---------- En-tête public ---------- */
 .entete { background: var(--surface); border-bottom: 1px solid var(--bordure); }
@@ -329,7 +330,7 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 .ligne-surlignee { background: #F5F8FF; }
 
 /* ---------- Indicateurs chiffrés ---------- */
-.indicateurs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.indicateurs { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
 .indicateur {
     display: flex; flex-direction: column; gap: 4px;
     padding: 18px; border-radius: var(--rayon-grand);
@@ -472,3 +473,35 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 .liste-simple li { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
 .liste-simple .icone { margin-top: 3px; color: var(--texte-3); }
 .tableau .jauge { margin-top: 6px; max-width: 160px; }
+
+/* ---------- Bulletin de l'élève ---------- */
+.entete-impression, .signatures { display: none; }
+.page { padding-top: 20px; padding-bottom: 48px; }
+.indicateur-valeur-moyenne { font-size: 24px; }
+.indicateur sup { font-size: 0.5em; }
+.tableau-compact th, .tableau-compact td { padding: 10px 6px; }
+.zone-graphique { position: relative; height: 260px; }
+.legende { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--texte-2); }
+.legende li { display: flex; gap: 6px; align-items: center; }
+.legende-trait { display: inline-block; width: 16px; height: 0; border-top: 4px solid; border-radius: 2px; }
+.legende-bleu { border-color: var(--bleu); }
+.legende-gris { border-color: var(--texte-4); }
+.legende-seuil { border-top: 2px dashed var(--ambre); }
+
+/* Tableau qui devient une liste compacte sur téléphone :
+   ligne 1 = matière + note, ligne 2 = coefficient, moyenne de la classe, appréciation */
+@media (max-width: 599px) {
+    .tableau-adaptatif thead { display: none; }
+    .tableau-adaptatif, .tableau-adaptatif tbody, .tableau-adaptatif tfoot { display: block; width: 100%; }
+    .tableau-adaptatif tr {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px;
+        padding: 12px 16px;
+    }
+    .tableau-adaptatif th, .tableau-adaptatif td { padding: 0; }
+    .tableau-adaptatif th[scope="row"] { flex: 1 1 calc(100% - 100px); font-size: 16px; }
+    .tableau-adaptatif .cellule-note { margin-left: auto; }
+    .tableau-adaptatif td:not(.cellule-note) { order: 2; font-size: 14px; color: var(--texte-3); text-align: left; }
+    .tableau-adaptatif td[data-libelle]:not(.cellule-note)::before { content: attr(data-libelle) " "; }
+    .tableau-adaptatif .masquer-mobile { display: none; }
+    .tableau-adaptatif tfoot td { color: var(--texte); }
+}
