@@ -1,0 +1,104 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, jauge with context %}
+
+{% block titre %}{{ classe.nom }} · séquence {{ sequence }}{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <a class="fil" href="{{ url_for('liste_classes') }}">{{ icone("fleche-gauche", "icone-petite") }}Toutes les classes</a>
+        <h1>{{ classe.nom }} — {{ filieres.get(classe.filiere, classe.filiere) }}</h1>
+        <span class="texte-secondaire texte-petit">Liste de classe · séquence {{ sequence }}</span>
+    </div>
+    <div class="ligne">
+        <nav class="selecteur-pilules" aria-label="Choix de la séquence">
+            {% for numero in range(1, nombre_sequences + 1) %}
+                {% if numero in sequences %}
+                <a class="pilule" href="{{ url_for('liste_classe', classe_id=classe.id, sequence=numero) }}"{% if numero == sequence %} aria-current="page"{% endif %} aria-label="Séquence {{ numero }}">S{{ numero }}</a>
+                {% else %}
+                <span class="pilule pilule-inactive">S{{ numero }}</span>
+                {% endif %}
+            {% endfor %}
+        </nav>
+    </div>
+</div>
+
+<section class="indicateurs" aria-label="Indicateurs de la classe">
+    <div class="indicateur">
+        <span class="indicateur-libelle">Moyenne générale</span>
+        <span class="indicateur-valeur">{{ synthese.moyenne_generale|note }}</span>
+    </div>
+    <div class="indicateur">
+        <span class="indicateur-libelle">Taux de réussite (≥ 10)</span>
+        <span class="indicateur-valeur">{{ synthese.taux_reussite|note }}<span class="indicateur-unite"> %</span></span>
+        <span class="indicateur-detail">{{ synthese.admis }} élèves sur {{ synthese.classes }}</span>
+    </div>
+    <div class="indicateur">
+        <span class="indicateur-libelle">Effectif</span>
+        <span class="indicateur-valeur">{{ synthese.eleves|length }}<span class="indicateur-unite"> / {{ classe.effectif_max }}</span></span>
+        <span class="indicateur-detail">Effectif maximal : {{ classe.effectif_max }}</span>
+    </div>
+</section>
+
+<div class="disposition">
+    <section class="carte carte-sans-marge zone-principale" aria-labelledby="titre-liste">
+        <div class="carte-entete">
+            <h2 id="titre-liste">Classement</h2>
+            <div class="champ champ-recherche">
+                <label for="recherche-eleve" class="visuellement-cache">Rechercher un élève</label>
+                <input id="recherche-eleve" type="search" placeholder="Nom ou matricule" data-recherche="#tableau-classement" autocomplete="off">
+            </div>
+        </div>
+        <div class="tableau-conteneur">
+            <table class="tableau" id="tableau-classement">
+                <thead>
+                    <tr><th scope="col">Rang</th><th scope="col">Élève</th><th scope="col">Moyenne / 20</th><th scope="col">Appréciation</th><th scope="col" class="actions">Action</th></tr>
+                </thead>
+                <tbody>
+                    {% for eleve in synthese.eleves %}
+                    <tr data-texte="{{ (eleve.nom ~ ' ' ~ eleve.prenom ~ ' ' ~ eleve.matricule)|lower }}">
+                        <td>
+                            {% if eleve.rang %}
+                            <span class="rang{% if eleve.rang <= 3 %} rang-podium{% endif %}">{{ eleve.rang }}</span>{% if eleve.ex_aequo %} <span class="ex-aequo" title="ex æquo">ex</span>{% endif %}
+                            {% else %}<span class="rang">—</span>{% endif %}
+                        </td>
+                        <th scope="row">{{ eleve.nom }} {{ eleve.prenom }}<span class="sous-texte">{{ eleve.matricule }}</span></th>
+                        <td>
+                            <div class="ligne cellule-moyenne">
+                                <span class="gras chiffres{% if eleve.moyenne is not none and eleve.moyenne < 10 %} texte-rouge{% endif %}">{{ eleve.moyenne|note }}</span>
+                                {{ jauge(eleve.moyenne or 0, 20, "jauge-rouge" if eleve.moyenne is not none and eleve.moyenne < 10 else "") }}
+                            </div>
+                        </td>
+                        <td>{{ eleve.appreciation }}</td>
+                        <td class="actions"><a class="bouton bouton-discret" href="{{ url_for('fiche_eleve', eleve_id=eleve.id, sequence=sequence) }}">{{ icone("bulletin", "icone-petite") }}Notes</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="carte-vide" data-aucun-resultat hidden>{{ icone("recherche") }}Aucun élève ne correspond à la recherche.</p>
+    </section>
+
+    <aside class="zone-laterale pile">
+        <section class="carte pile" aria-labelledby="titre-repartition">
+            <h2 id="titre-repartition">Répartition des moyennes</h2>
+            <div class="zone-graphique zone-graphique-petite">
+                <canvas id="graphique-repartition" data-source="{{ url_for('api_moyennes_classe', classe_id=classe.id, sequence=sequence) }}"
+                        role="img" aria-label="Nombre d'élèves par tranche de moyenne">
+                    {% for t in synthese.repartition %}{{ t.tranche }} : {{ t.effectif }}. {% endfor %}
+                </canvas>
+            </div>
+            <p class="texte-tres-petit texte-secondaire" data-message-graphique>Source : /api/classe/{{ classe.id }}/moyennes</p>
+        </section>
+        <div class="encadre encadre-avertissement">
+            {{ icone("trophee") }}
+            <span><strong>Rangs ex æquo.</strong> Deux élèves à la même moyenne partagent le rang ; le suivant prend le rang d'après (2, 2, puis 4).</span>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vendor/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/liste_classe.js') }}"></script>
+{% endblock %}

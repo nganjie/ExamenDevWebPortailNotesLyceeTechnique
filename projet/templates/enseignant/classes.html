@@ -1,0 +1,39 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone, jauge with context %}
+
+{% block titre %}Listes de classe{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <span class="fil">Année scolaire {{ annee_scolaire }}</span>
+        <h1>Listes de classe</h1>
+    </div>
+</div>
+
+<section class="grille-cartes" aria-label="Classes">
+    {% for classe in classes %}
+    <article class="carte pile carte-classe">
+        <div class="ligne-espacee">
+            <div class="pile-serree">
+                <h2>{{ classe.nom }}</h2>
+                <span class="texte-secondaire texte-petit">{{ filieres.get(classe.filiere, classe.filiere) }}</span>
+            </div>
+            <span class="badge badge-bleu">{{ classe.filiere }}</span>
+        </div>
+        <div class="pile-serree">
+            <div class="ligne-espacee texte-petit"><span class="texte-secondaire">Effectif</span><span class="gras">{{ classe.effectif }} / {{ classe.effectif_max }}</span></div>
+            {{ jauge(classe.effectif, classe.effectif_max) }}
+        </div>
+        <dl class="liste-definitions">
+            <dt>Prof. principal</dt><dd>{{ classe.professeur_principal or "—" }}</dd>
+            {% if classe.synthese %}
+            <dt>Moyenne S{{ classe.sequence }}</dt><dd>{{ classe.synthese.moyenne_generale|note }}</dd>
+            <dt>Réussite</dt><dd>{{ classe.synthese.taux_reussite|note }} %</dd>
+            {% endif %}
+        </dl>
+        <a class="bouton bouton-principal" href="{{ url_for('liste_classe', classe_id=classe.id) }}">{{ icone("utilisateurs") }}Voir la liste</a>
+    </article>
+    {% endfor %}
+</section>
+{% endblock %}

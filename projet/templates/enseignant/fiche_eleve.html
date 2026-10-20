@@ -1,0 +1,32 @@
+{% extends "layout_enseignant.html" %}
+{% from "macros.html" import icone with context %}
+
+{% block titre %}{{ eleve.nom }} {{ eleve.prenom }} · séquence {{ sequence }}{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="entete-page-titre">
+        <a class="fil" href="{{ url_for('liste_classe', classe_id=eleve.classe_id, sequence=sequence) }}">{{ icone("fleche-gauche", "icone-petite") }}{{ eleve.classe_nom }}</a>
+        <h1>{{ eleve.nom }} {{ eleve.prenom }}</h1>
+        <span class="texte-secondaire texte-petit">{{ eleve.matricule }} · {{ eleve.classe_nom }} · né(e) le {{ eleve.date_naissance|date_fr }}</span>
+    </div>
+    <nav class="selecteur-pilules" aria-label="Choix de la séquence">
+        {% for numero in range(1, nombre_sequences + 1) %}
+            {% if numero in sequences %}
+            <a class="pilule" href="{{ url_for('fiche_eleve', eleve_id=eleve.id, sequence=numero) }}"{% if numero == sequence %} aria-current="page"{% endif %} aria-label="Séquence {{ numero }}">S{{ numero }}</a>
+            {% else %}
+            <span class="pilule pilule-inactive">S{{ numero }}</span>
+            {% endif %}
+        {% endfor %}
+    </nav>
+</div>
+
+{% set source_evolution = url_for('api_evolution_eleve', eleve_id=eleve.id) %}
+{% set correction = True %}
+{% include "_bulletin.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vendor/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/graphique.js') }}"></script>
+{% endblock %}

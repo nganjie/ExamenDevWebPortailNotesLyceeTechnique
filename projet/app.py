@@ -301,8 +301,12 @@ def donnees_bulletin(eleve, sequence):
     moyennes_classe = [e["moyenne"] for e in classe if e["moyenne"] is not None]
 
     matieres = db.execute(
-        "SELECT m.id, m.nom, m.coefficient, en.nom AS enseignant FROM matieres m "
+        "SELECT m.id, m.nom, m.coefficient, m.enseignant_id, en.nom AS enseignant FROM matieres m "
         "JOIN enseignants en ON en.id = m.enseignant_id ORDER BY m.coefficient DESC, m.nom").fetchall()
+    identifiants_notes = {
+        ligne["matiere_id"]: ligne["id"] for ligne in db.execute(
+            "SELECT id, matiere_id FROM notes WHERE eleve_id = ? AND sequence = ?",
+            (eleve["id"], sequence)).fetchall()}
     lignes = []
     total_points = 0
     total_coefficients = 0
@@ -313,9 +317,12 @@ def donnees_bulletin(eleve, sequence):
             total_points += note * matiere["coefficient"]
             total_coefficients += matiere["coefficient"]
         lignes.append({
+            "matiere_id": matiere["id"],
+            "note_id": identifiants_notes.get(matiere["id"]),
             "matiere": matiere["nom"],
             "enseignant": matiere["enseignant"],
             "coefficient": matiere["coefficient"],
+            "enseignant_id": matiere["enseignant_id"],
             "note": note,
             "points": None if note is None else note * matiere["coefficient"],
             "moyenne_classe": calculs.moyenne_simple(notes_matiere),
@@ -777,6 +784,115 @@ def corriger_note(note_id):
         "WHERE co.note_id = ? ORDER BY co.id DESC", (note_id,)).fetchall()
     return render_template("enseignant/correction.html", note=note, historique=historique,
                            erreurs=erreurs, saisie=saisie, retour=retour), 400 if erreurs else 200
+
+
+# --- Listes de classe et fiche de notes d'un élève --------------------------
+
+def charger_classe(classe_id):
+    """Classe demandée ou erreur 404."""
+    classe = get_db().execute("SELECT * FROM classes WHERE id = ?", (classe_id,)).fetchone()
+    if classe is None:
+        abort(404)
+    return classe
+
+
+def sequence_demandee(classe_id):
+    """Séquence de l'URL (?sequence=N) ou, à défaut, la dernière séquence notée de la classe."""
+    sequence = lire_entier(request.args.get("sequence"))
+    if sequence is None:
+        notees = sequences_notees(classe_id)
+        return notees[-1] if notees else 1
+    if not 1 <= sequence <= NOMBRE_SEQUENCES:
+        abort(404)
+    return sequence
+
+
+def synthese_classe(classe, sequence):
+    """Moyennes, rangs, moyenne générale, taux de réussite et répartition d'une classe."""
+    eleves = calculs.bulletin_classe(get_db(), classe["id"], sequence)
+    moyennes = [e["moyenne"] for e in eleves]
+    return {
+        "eleves": eleves,
+        "moyenne_generale": calculs.moyenne_simple(moyennes),
+        "taux_reussite": calculs.taux_reussite(moyennes),
+        "admis": sum(1 for m in moyennes if m is not None and m >= calculs.SEUIL_REUSSITE),
+        "classes": sum(1 for m in moyennes if m is not None),
+        "repartition": calculs.repartition(moyennes),
+    }
+
+
+@app.route("/enseignant/classes")
+@connexion_requise
+def liste_classes():
+    """Choix d'une classe : effectif et moyenne générale de la dernière séquence notée."""
+    classes = []
+    for classe in get_db().execute(
+            "SELECT c.*, en.nom AS professeur_principal, "
+            "(SELECT COUNT(*) FROM eleves e WHERE e.classe_id = c.id) AS effectif "
+            "FROM classes c LEFT JOIN enseignants en ON en.id = c.professeur_principal_id "
+            "ORDER BY c.niveau, c.nom").fetchall():
+        notees = sequences_notees(classe["id"])
+        ligne = dict(classe)
+        ligne["sequence"] = notees[-1] if notees else None
+        ligne["synthese"] = synthese_classe(classe, notees[-1]) if notees else None
+        classes.append(ligne)
+    return render_template("enseignant/classes.html", classes=classes)
+
+
+@app.route("/enseignant/classes/<int:classe_id>")
+@connexion_requise
+def liste_classe(classe_id):
+    """Liste d'une classe pour une séquence : moyennes coefficientées et rangs."""
+    classe = charger_classe(classe_id)
+    sequence = sequence_demandee(classe_id)
+    autres_classes = get_db().execute("SELECT id, nom FROM classes ORDER BY niveau, nom").fetchall()
+    return render_template("enseignant/liste_classe.html", classe=classe, sequence=sequence,
+                           synthese=synthese_classe(classe, sequence), classes=autres_classes,
+                           sequences=sequences_notees(classe_id), nombre_sequences=NOMBRE_SEQUENCES)
+
+
+@app.route("/enseignant/eleves/<int:eleve_id>")
+@connexion_requise
+def fiche_eleve(eleve_id):
+    """Fiche de notes d'un élève vue par un enseignant, avec accès à la correction."""
+    eleve = get_db().execute(
+        "SELECT e.*, c.nom AS classe_nom, c.filiere FROM eleves e "
+        "JOIN classes c ON c.id = e.classe_id WHERE e.id = ?", (eleve_id,)).fetchone()
+    if eleve is None:
+        abort(404)
+    sequence = sequence_demandee(eleve["classe_id"])
+    sequences = sequences_notees(eleve["classe_id"])
+    bulletin = donnees_bulletin(eleve, sequence) if sequence in sequences else None
+    return render_template("enseignant/fiche_eleve.html", eleve=eleve, sequence=sequence,
+                           sequences=sequences, bulletin=bulletin, historique=evolution_eleve(eleve),
+                           nombre_sequences=NOMBRE_SEQUENCES, admin=est_admin())
+
+
+@app.route("/api/classe/<int:classe_id>/moyennes")
+def api_moyennes_classe(classe_id):
+    """Moyennes et rangs des élèves d'une classe pour une séquence (enseignants uniquement)."""
+    if g.enseignant is None:
+        return erreur_json("Accès réservé aux enseignants.", 403)
+    classe = get_db().execute("SELECT id, nom FROM classes WHERE id = ?", (classe_id,)).fetchone()
+    if classe is None:
+        return erreur_json("Classe introuvable.", 404)
+    sequence = lire_entier(request.args.get("sequence"))
+    if sequence is None:
+        notees = sequences_notees(classe_id)
+        sequence = notees[-1] if notees else 1
+    if not 1 <= sequence <= NOMBRE_SEQUENCES:
+        return erreur_json("La séquence va de 1 à 6.", 400)
+    synthese = synthese_classe(classe, sequence)
+    return jsonify({
+        "classe": {"id": classe["id"], "nom": classe["nom"]},
+        "sequence": sequence,
+        "moyenne_generale": synthese["moyenne_generale"],
+        "taux_reussite": synthese["taux_reussite"],
+        "repartition": synthese["repartition"],
+        "eleves": [{"id": e["id"], "matricule": e["matricule"], "nom": e["nom"], "prenom": e["prenom"],
+                    "moyenne": e["moyenne"], "rang": e["rang"], "ex_aequo": e["ex_aequo"]}
+                   for e in synthese["eleves"]],
+    })
 
 
 # --- Pages d'erreur ----------------------------------------------------------

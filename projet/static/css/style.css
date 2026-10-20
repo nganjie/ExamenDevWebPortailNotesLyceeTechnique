@@ -73,6 +73,9 @@ a:hover { color: var(--bleu-fonce); }
 
 img { max-width: 100%; height: auto; }
 
+/* Un élément masqué par l'attribut hidden le reste, quelle que soit sa classe */
+[hidden] { display: none !important; }
+
 :focus-visible { outline: 3px solid #93B4F5; outline-offset: 2px; }
 
 /* Texte réservé aux lecteurs d'écran */
@@ -544,3 +547,14 @@ input.case-note {
 }
 .pagination a:hover { background: var(--fond-3); }
 .pagination a[aria-current="page"] { border-color: var(--encre); background: var(--encre); color: #FFFFFF; }
+
+/* ---------- Listes de classe ---------- */
+.grille-cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.liste-definitions { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 14px; }
+.liste-definitions dt { color: var(--texte-3); }
+.liste-definitions dd { margin: 0; font-weight: 600; }
+.champ-recherche { flex: 0 1 260px; }
+.cellule-moyenne { flex-wrap: nowrap; min-width: 160px; }
+.cellule-moyenne .jauge { margin-top: 0; flex: 1; }
+.zone-graphique-petite { height: 220px; }
+.tableau tbody tr[hidden] { display: none; }
