@@ -425,7 +425,7 @@ Le sujet laisse certains choix ouverts ; ils seront tranchés et justifiés dans
 | `P3-EXT-4` | Évaluations | [étape 06](specs/2026-10-20_etape06-evaluations-saisie.md) | fait |
 | `P3-EXT-5` | Rôle administrateur | [étape 04](specs/2026-10-20_etape04-authentification.md) | fait |
 | `P3-EXT-6` | Export CSV des élèves | [étape 09](specs/2026-10-20_etape09-administration.md) | fait |
-| `G-LIV-1` | Rapport PowerPoint | — | à faire par le groupe |
+| `G-LIV-1` | Rapport PowerPoint | [rapport](specs/2026-10-22_rapport-powerpoint.md) | fait (`rapport/`), membres à compléter |
 | `G-LIV-2` | Projet testable (README, base, export) | [étape 11](specs/2026-10-20_etape11-finitions.md) | fait |
 | `G-LIV-3` | Captures ordinateur / téléphone | [étape 11](specs/2026-10-20_etape11-finitions.md) | fait (`captures/`) |
 | `G-LIV-4` | Vidéo de 5 à 10 minutes | — | à faire par le groupe |
