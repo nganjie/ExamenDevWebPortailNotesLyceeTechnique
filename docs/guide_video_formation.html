@@ -1,0 +1,557 @@
+<title>Plan de tournage Portail de notes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Mise en page : bandeau chronomètre collant, sommaire des scènes à gauche, fiches de scènes à droite */
+:root {
+  --fond: #F4F6FA;
+  --surface: #FFFFFF;
+  --surface-2: #EEF2F7;
+  --encre: #0F172A;
+  --texte-2: #475569;
+  --bordure: #DCE3EC;
+  --bleu: #1D4ED8;
+  --bleu-doux: #E8EEFD;
+  --ambre: #B45309;
+  --ambre-doux: #FEF3C7;
+  --vert: #047857;
+  --vert-doux: #ECFDF5;
+  --rouge: #B91C1C;
+  --rouge-doux: #FEE2E2;
+  --bandeau: #0F172A;
+  --bandeau-texte: #F8FAFC;
+  --code-fond: #0F172A;
+  --code-texte: #E2E8F0;
+  --titre: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --corps: "Inter", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond: #0B1120; --surface: #131C2E; --surface-2: #1B2638; --encre: #E8EDF5; --texte-2: #A3B1C6;
+    --bordure: #26324A; --bleu: #7EA2FF; --bleu-doux: #1A2B52; --ambre: #F2B154; --ambre-doux: #3A2A10;
+    --vert: #4ED1A1; --vert-doux: #10302A; --rouge: #FF8A8A; --rouge-doux: #3A1717;
+    --bandeau: #060B16; --bandeau-texte: #F8FAFC; --code-fond: #060B16; --code-texte: #E2E8F0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fond: #0B1120; --surface: #131C2E; --surface-2: #1B2638; --encre: #E8EDF5; --texte-2: #A3B1C6;
+  --bordure: #26324A; --bleu: #7EA2FF; --bleu-doux: #1A2B52; --ambre: #F2B154; --ambre-doux: #3A2A10;
+  --vert: #4ED1A1; --vert-doux: #10302A; --rouge: #FF8A8A; --rouge-doux: #3A1717;
+  --bandeau: #060B16; --bandeau-texte: #F8FAFC; --code-fond: #060B16; --code-texte: #E2E8F0;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--fond); color: var(--encre); font-family: var(--corps); font-size: 16px; line-height: 1.55; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bandeau); }
+h1, h2, h3 { font-family: var(--titre); line-height: 1.2; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+code, kbd { font-family: var(--mono); font-size: 0.88em; }
+kbd { padding: 1px 6px; border: 1px solid var(--bordure); border-bottom-width: 2px; border-radius: 5px; background: var(--surface); white-space: nowrap; }
+a { color: var(--bleu); }
+button { font: inherit; }
+:focus-visible { outline: 3px solid var(--bleu); outline-offset: 2px; }
+
+.gouttiere { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.largeur { max-width: 1180px; margin: 0 auto; }
+
+/* Bandeau chronomètre */
+.bandeau { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bandeau); color: var(--bandeau-texte); }
+.bandeau-interieur { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding-block: 10px; }
+.chrono { font-family: var(--mono); font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.chrono-cible { font-size: 13px; color: #94A3B8; }
+.scene-en-cours { flex: 1 1 220px; min-width: 0; font-size: 14px; }
+.scene-en-cours strong { display: block; font-family: var(--titre); font-size: 16px; }
+.boutons-chrono { display: flex; gap: 8px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 9px; border: 1px solid var(--bordure); background: var(--surface); color: var(--encre); font-weight: 600; font-size: 14px; cursor: pointer; }
+.btn:hover { border-color: var(--bleu); }
+.bandeau .btn { background: #1E293B; border-color: #334155; color: #F8FAFC; }
+.bandeau .btn.principal { background: #1D4ED8; border-color: #1D4ED8; }
+.barre-temps { height: 4px; background: #1E293B; }
+.barre-temps span { display: block; height: 100%; width: 0; background: #F2B154; transition: width 0.4s linear; }
+
+/* En-tête */
+.entete { padding-block: 36px 8px; display: grid; gap: 14px; }
+.surtitre { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ambre); }
+.entete h1 { font-size: clamp(28px, 5vw, 42px); font-weight: 800; }
+.entete p { max-width: 68ch; color: var(--texte-2); font-size: 17px; }
+.repartition { display: flex; height: 34px; border-radius: 8px; overflow: hidden; border: 1px solid var(--bordure); font-size: 12px; font-weight: 600; }
+.repartition a { display: flex; align-items: center; justify-content: center; min-width: 0; padding: 0 4px; color: var(--encre); text-decoration: none; background: var(--surface-2); border-right: 1px solid var(--bordure); white-space: nowrap; overflow: hidden; }
+.repartition a:last-child { border-right: 0; }
+.repartition a.active { background: var(--bleu); color: #FFFFFF; }
+
+/* Corps : sommaire + contenu */
+.corps { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; padding-block: 24px 64px; }
+.sommaire { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 92px); align-self: start; display: grid; gap: 4px; }
+.sommaire a { display: grid; grid-template-columns: 54px 1fr; gap: 6px; padding: 8px 10px; border-radius: 8px; color: var(--encre); text-decoration: none; font-size: 14px; }
+.sommaire a:hover { background: var(--surface-2); }
+.sommaire a.active { background: var(--bleu-doux); color: var(--bleu); font-weight: 600; }
+.sommaire .horaire { font-family: var(--mono); font-size: 12px; color: var(--texte-2); padding-top: 2px; }
+.contenu { display: grid; gap: 28px; min-width: 0; }
+
+.bloc { background: var(--surface); border: 1px solid var(--bordure); border-radius: 14px; padding: 22px; display: grid; gap: 16px; min-width: 0; }
+.bloc h2 { font-size: 22px; font-weight: 800; }
+.bloc-entete { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.duree { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--ambre); background: var(--ambre-doux); padding: 2px 8px; border-radius: 6px; }
+.objectif { color: var(--texte-2); }
+
+/* Comptes de test */
+.comptes { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.compte { border: 1px solid var(--bordure); border-radius: 12px; padding: 14px; display: grid; gap: 10px; background: var(--surface); }
+.compte-role { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.compte-role strong { font-family: var(--titre); font-size: 16px; }
+.pastille { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.p-bleu { background: var(--bleu-doux); color: var(--bleu); }
+.p-vert { background: var(--vert-doux); color: var(--vert); }
+.p-ambre { background: var(--ambre-doux); color: var(--ambre); }
+.p-rouge { background: var(--rouge-doux); color: var(--rouge); }
+.champ-copie { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; align-items: center; }
+.champ-copie span { grid-column: 1 / -1; font-size: 13px; color: var(--texte-2); }
+.champ-copie code { font-size: 16px; font-weight: 600; background: var(--surface-2); padding: 5px 10px; border-radius: 6px; white-space: nowrap; overflow-x: auto; }
+.etape code, .etape .saisie { overflow-wrap: anywhere; }
+.copier { min-height: 34px; padding: 0 10px; font-size: 13px; }
+.copier.fait { border-color: var(--vert); color: var(--vert); }
+.compte p { font-size: 13px; color: var(--texte-2); }
+
+/* Onglets système */
+.onglets { display: flex; flex-wrap: wrap; gap: 6px; }
+.onglet { min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--bordure); background: var(--surface-2); color: var(--encre); font-weight: 600; font-size: 14px; cursor: pointer; }
+.onglet[aria-selected="true"] { background: var(--bleu); border-color: var(--bleu); color: #FFFFFF; }
+.terminal { position: relative; background: var(--code-fond); color: var(--code-texte); border-radius: 10px; padding: 14px 16px; overflow-x: auto; }
+.terminal pre { margin: 0; font-family: var(--mono); font-size: 14px; line-height: 1.7; }
+.terminal .copier { position: absolute; top: 8px; right: 8px; background: #1E293B; border-color: #334155; color: #F8FAFC; }
+.commentaire { color: #8BA1BF; }
+
+/* Étapes à cocher */
+.etapes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.etape { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); }
+.etape input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--vert); cursor: pointer; }
+.etape label { cursor: pointer; }
+.etape.cochee { opacity: 0.6; }
+.etape.cochee label { text-decoration: line-through; text-decoration-color: var(--texte-2); }
+.saisie { font-family: var(--mono); font-weight: 600; background: var(--surface); border: 1px solid var(--bordure); border-radius: 5px; padding: 0 5px; }
+.attendu { display: block; font-size: 14px; color: var(--vert); margin-top: 2px; }
+.attendu::before { content: "Résultat : "; font-weight: 700; }
+
+.a-dire { border-left: 0; background: var(--bleu-doux); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; }
+.a-dire-titre { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bleu); }
+.a-dire p { font-size: 16px; max-width: 70ch; }
+.alerte { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; background: var(--ambre-doux); color: var(--encre); border-radius: 10px; padding: 12px 14px; font-size: 15px; }
+.alerte strong { color: var(--ambre); }
+
+.progression { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--texte-2); }
+.progression-barre { flex: 1; height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.progression-barre span { display: block; height: 100%; width: 0; background: var(--vert); }
+
+@media (max-width: 860px) {
+  .corps { grid-template-columns: 1fr; }
+  .sommaire { display: none; }
+  .chrono { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="bandeau">
+  <div class="gouttiere">
+    <div class="largeur bandeau-interieur">
+      <div>
+        <div class="chrono" id="chrono" aria-live="off">00:00</div>
+        <div class="chrono-cible">objectif : 9 min 30 (entre 5 et 10 min)</div>
+      </div>
+      <div class="scene-en-cours" aria-live="polite"><span id="scene-libelle">Scène en cours</span><strong id="scene-nom">Préparation : chronomètre arrêté</strong></div>
+      <div class="boutons-chrono">
+        <button class="btn principal" id="btn-chrono" type="button">Démarrer</button>
+        <button class="btn" id="btn-zero" type="button">Remettre à zéro</button>
+      </div>
+    </div>
+  </div>
+  <div class="barre-temps"><span id="barre-temps"></span></div>
+</div>
+
+<div class="gouttiere">
+  <header class="largeur entete">
+    <span class="surtitre">Vidéo de formation · Projet 3</span>
+    <h1>Plan de tournage du portail de notes</h1>
+    <p>Le parcours complet du site, scène par scène, avec les comptes de test, ce qu'il faut taper et ce qu'il faut dire. Lancez le chronomètre au début de l'enregistrement : il indique la scène où vous devriez être.</p>
+    <nav class="repartition" id="repartition" aria-label="Répartition du temps"></nav>
+  </header>
+
+  <div class="largeur corps">
+    <nav class="sommaire" id="sommaire" aria-label="Scènes"></nav>
+
+    <main class="contenu">
+      <section class="bloc" id="comptes" aria-labelledby="t-comptes">
+        <div class="bloc-entete"><h2 id="t-comptes">Comptes de test</h2><span class="objectif">Base livrée avec le projet (projet.db).</span></div>
+        <div class="comptes" id="liste-comptes"></div>
+        <div class="alerte"><span aria-hidden="true">⚠</span><p><strong>5 essais ratés de suite</strong> sur un même identifiant le bloquent 5 minutes. Pour la démonstration d'erreur, ne faites qu'un seul essai raté. En cas de blocage : arrêtez le serveur (<kbd>Ctrl</kbd> + <kbd>C</kbd>) et relancez-le.</p></div>
+      </section>
+
+      <section class="bloc" id="preparation" aria-labelledby="t-preparation">
+        <div class="bloc-entete"><h2 id="t-preparation">Préparation, avant d'enregistrer</h2><span class="duree">10 min</span></div>
+        <p class="objectif">La vidéo crée une évaluation, des notes, une classe et des élèves. Lancez le site sur une <strong>copie</strong> de la base pour garder projet.db intact.</p>
+        <div class="onglets" role="tablist" aria-label="Système">
+          <button class="onglet" role="tab" id="o-ps" aria-controls="c-ps" aria-selected="true" type="button">Windows PowerShell</button>
+          <button class="onglet" role="tab" id="o-cmd" aria-controls="c-cmd" aria-selected="false" type="button">Windows cmd</button>
+          <button class="onglet" role="tab" id="o-mac" aria-controls="c-mac" aria-selected="false" type="button">macOS / Linux</button>
+        </div>
+        <div class="terminal" id="c-ps" role="tabpanel" aria-labelledby="o-ps"><button class="btn copier" type="button" data-copier-bloc>Copier</button><pre><span class="commentaire"># dans le dossier projet</span>
+venv\Scripts\Activate.ps1
+Copy-Item projet.db video.db
+$env:PORTAIL_BASE = "video.db"
+python app.py</pre></div>
+        <div class="terminal" id="c-cmd" role="tabpanel" aria-labelledby="o-cmd" hidden><button class="btn copier" type="button" data-copier-bloc>Copier</button><pre><span class="commentaire">REM dans le dossier projet</span>
+venv\Scripts\activate
+copy projet.db video.db
+set PORTAIL_BASE=video.db
+python app.py</pre></div>
+        <div class="terminal" id="c-mac" role="tabpanel" aria-labelledby="o-mac" hidden><button class="btn copier" type="button" data-copier-bloc>Copier</button><pre><span class="commentaire"># dans le dossier projet</span>
+source venv/bin/activate
+cp projet.db video.db
+PORTAIL_BASE=video.db python app.py</pre></div>
+        <ul class="etapes" data-groupe="preparation"></ul>
+      </section>
+
+      <div id="scenes" class="contenu"></div>
+
+      <section class="bloc" id="apres" aria-labelledby="t-apres">
+        <div class="bloc-entete"><h2 id="t-apres">Après l'enregistrement</h2></div>
+        <ul class="etapes" data-groupe="apres"></ul>
+        <div class="progression"><span id="progression-texte">0 étape cochée</span><div class="progression-barre"><span id="progression-barre"></span></div><button class="btn" id="btn-decocher" type="button">Tout décocher</button></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ---------- Données du tournage ----------
+const COMPTES = [
+  { role: "Administrateur", badge: ["Admin", "p-ambre"], champs: [["Identifiant", "admin"], ["Mot de passe", "Admin!2026"]],
+    note: "M. Fotso Jean, professeur d'électrotechnique. Voit tout, gère les classes, les élèves et l'import." },
+  { role: "Élève (bulletin)", badge: ["Élève", "p-bleu"], champs: [["Matricule", "LT25-F3-0001"], ["Code", "337145"]],
+    note: "TCHAMENI Moussa, 2e année F3. Bulletins des séquences 1 et 2." },
+  { role: "Enseignant simple", badge: ["Enseignant", "p-vert"], champs: [["Identifiant", "p.atangana"], ["Mot de passe", "Prof!2026"]],
+    note: "M. Atangana Pierre, mathématiques. Sert à montrer qu'un enseignant n'a pas accès à l'administration." },
+  { role: "Saisies d'erreur", badge: ["À refuser", "p-rouge"], champs: [["Matricule", "LT25-F3-17"], ["Note", "22"]],
+    note: "Matricule au mauvais format (refusé par le JavaScript) et note hors de 0 à 20." },
+];
+
+const PREPARATION = [
+  "Ouvrir un terminal dans le dossier <code>projet</code> et lancer les commandes ci-dessus (copie de la base, puis <code>python app.py</code>).",
+  "Ouvrir Chrome sur <code>http://127.0.0.1:5000</code>, en plein écran, zoom à 110 % (<kbd>Ctrl</kbd> + <kbd>+</kbd>). Fermer les autres onglets.",
+  "Ouvrir VS Code sur <code>calculs.py</code> (fonction <code>classer</code>) et <code>static/js/saisie.js</code> pour la scène sur le code.",
+  "Repérer le fichier <code>projet/exemples_import/eleves_exemple.xlsx</code> pour l'import.",
+  "Régler OBS Studio : 1280 × 720 au minimum (1920 × 1080 conseillé), 30 images/s, enregistrement en MP4. Tester le micro.",
+  "Activer « Ne pas déranger » pour couper les notifications. Garder cette page sur un téléphone ou un deuxième écran.",
+  "Faire une répétition complète avec le chronomètre, puis relancer le serveur sur une nouvelle copie de la base avant d'enregistrer.",
+];
+
+const APRES = [
+  "Arrêter le serveur (<kbd>Ctrl</kbd> + <kbd>C</kbd>) et supprimer <code>video.db</code> : la base livrée projet.db n'a pas changé.",
+  "Vérifier la vidéo : durée entre 5 et 10 minutes, son audible, texte lisible à l'écran.",
+  "Exporter en MP4 et nommer le fichier <code>video_demo.mp4</code> (nom attendu sur la clé USB).",
+];
+
+// Chaque scène : début et fin en secondes, objectif, étapes [texte, résultat attendu], texte à dire
+const SCENES = [
+  { id: "intro", nom: "Introduction", court: "Intro", debut: 0, fin: 60,
+    objectif: "Présenter le sujet, les technologies et le plan de la vidéo.",
+    etapes: [
+      ["Afficher la page d'accueil (ou la diapositive de titre du rapport).", ""],
+    ],
+    dire: [
+      "Bonjour. Je présente le projet 3 de l'évaluation finale de Technologies Web : le portail de notes d'un lycée technique.",
+      "Aujourd'hui, le lycée calcule les moyennes à la main et les parents doivent se déplacer pour connaître les résultats. Avec ce portail, les enseignants saisissent les notes et chaque élève, ou son parent, consulte son bulletin avec son matricule et un code personnel.",
+      "Le site est écrit en HTML, CSS et JavaScript, avec un serveur Flask et une base SQLite. Je vais le parcourir comme élève, puis comme enseignant et administrateur, montrer une saisie refusée et l'affichage sur téléphone, puis expliquer un extrait de code.",
+    ] },
+  { id: "eleve", nom: "Visiteur et élève", court: "Élève", debut: 60, fin: 150,
+    objectif: "Connexion, bulletin, rang, graphique, impression, confidentialité.",
+    etapes: [
+      ["Dans « Matricule », taper <span class='saisie'>LT25-F3-17</span> puis cliquer sur « Voir le bulletin ».", "message rouge sous le champ, rien n'est envoyé (vérification JavaScript)."],
+      ["Corriger : matricule <span class='saisie'>LT25-F3-0001</span>, code <span class='saisie'>337145</span>, puis « Voir le bulletin ».", "bulletin de la séquence 2 de TCHAMENI Moussa."],
+      ["Montrer la moyenne coefficientée, le rang, la moyenne de la classe, puis le tableau des notes (coefficients, appréciations).", ""],
+      ["Cliquer sur « S1 », puis revenir sur « S2 ». Descendre jusqu'à l'historique et au graphique.", "le graphique compare l'élève à sa classe."],
+      ["Cliquer sur « Imprimer » et montrer l'aperçu, puis annuler.", "bulletin sur une seule page A4, sans menu ni boutons."],
+      ["Dans la barre d'adresse : <span class='saisie'>127.0.0.1:5000/api/eleves/1/evolution</span>", "{\"erreur\": \"Accès refusé.\"} : un élève ne peut pas lire les notes d'un autre."],
+      ["Revenir en arrière et cliquer sur « Déconnexion ».", ""],
+    ],
+    dire: [
+      "Je me connecte comme élève. Si je me trompe dans le format du matricule, le JavaScript m'arrête avant l'envoi.",
+      "Voici le bulletin : la moyenne est coefficientée, le rang tient compte des ex æquo, et l'appréciation est calculée automatiquement. Le graphique est chargé par un appel fetch sur une route JSON du serveur.",
+      "Si j'essaie de lire les notes d'un autre élève par l'adresse, le serveur refuse : l'identité vient de la session, jamais de l'URL.",
+    ] },
+  { id: "enseignant", nom: "Espace enseignant", court: "Enseignant", debut: 150, fin: 330,
+    objectif: "Créer une évaluation, saisir les notes en direct, corriger une note, consulter les rangs et les statistiques.",
+    etapes: [
+      ["Onglet « Enseignant » : identifiant <span class='saisie'>admin</span>, mot de passe <span class='saisie'>Admin!2026</span>.", "tableau de bord de M. Fotso Jean."],
+      ["Menu « Évaluations » → formulaire « Nouvelle évaluation » : intitulé <span class='saisie'>Interrogation écrite</span>, classe <span class='saisie'>2e année F3</span>, matière Électrotechnique, séquence <span class='saisie'>Séquence 4</span>, date du jour (déjà remplie). Cliquer sur « Créer l'évaluation ».", "message vert, l'évaluation apparaît en tête de liste, statut « À saisir »."],
+      ["Cliquer sur « Saisir les notes ». Taper <span class='saisie'>12</span>, <span class='saisie'>14,5</span>, <span class='saisie'>22</span>, <span class='saisie'>abc</span>, <span class='saisie'>16</span> dans les cinq premières cases.", "22 et abc sont refusés en rouge, la moyenne se recalcule en direct, le bouton « Enregistrer » est bloqué."],
+      ["Remplacer <span class='saisie'>22</span> par <span class='saisie'>18</span>, vider la case <span class='saisie'>abc</span>, puis cliquer sur « Enregistrer les notes ».", "4 note(s) enregistrée(s) ; les cases deviennent des notes avec un lien « Corriger »."],
+      ["Cliquer sur « Corriger » à côté d'une note : nouvelle note <span class='saisie'>13</span>, motif <span class='saisie'>Erreur de report</span>, puis « Enregistrer la correction ».", "la note change ; l'historique garde l'ancienne valeur, le motif, l'auteur et la date."],
+      ["Menu « Listes de classe » → « 2e année F3 » → « S2 ». Montrer un rang suivi de « ex », puis taper un nom dans la recherche.", "élèves ex æquo au même rang ; la liste se filtre sans recharger la page."],
+      ["Cliquer sur « Notes » d'un élève pour ouvrir sa fiche.", ""],
+      ["Menu « Statistiques ».", "moyennes et taux de réussite par classe, matières par classe, 3 premiers, répartition par tranches."],
+    ],
+    dire: [
+      "Je me connecte comme enseignant. Je crée une évaluation pour la séquence 4, puis je saisis les notes de toute la classe sur une seule page.",
+      "Une note hors de 0 à 20 est refusée tout de suite et la moyenne de la classe se met à jour pendant la saisie. Si une seule note est fausse, rien n'est enregistré.",
+      "Une note déjà saisie ne s'écrase pas : elle se corrige avec un motif, et l'historique est conservé.",
+      "La liste de classe donne les rangs. Deux élèves à la même moyenne partagent le rang, et le suivant prend le rang d'après.",
+    ] },
+  { id: "admin", nom: "Administration et import", court: "Admin", debut: 330, fin: 420,
+    objectif: "Classes, élèves, code d'accès, import d'un fichier Excel.",
+    etapes: [
+      ["Menu « Classes » : nom <span class='saisie'>2e année F3</span>, niveau 2e année, filière F3, puis « Créer la classe ».", "refusé : « Une classe porte déjà ce nom. »"],
+      ["Corriger : nom <span class='saisie'>1re année F3</span>, niveau 1re année, filière F3, puis « Créer la classe ».", "nouvelle carte de classe 0 / 35."],
+      ["Menu « Élèves » → « Ajouter un élève » : nom <span class='saisie'>MBIDA</span>, prénom <span class='saisie'>Laure</span>, date <span class='saisie'>14/03/2011</span>, classe 1re année F3, matricule vide.", "matricule généré et code d'accès affiché une seule fois (seule son empreinte est gardée)."],
+      ["Menu « Importer des élèves » : classe 1re année F3, fichier <span class='saisie'>eleves_exemple.xlsx</span>, puis « Analyser le fichier ».", "10 lignes : 7 valides, 1 doublon, 2 erreurs (date invalide, prénom manquant)."],
+      ["Cliquer sur « Importer 7 élève(s) » et confirmer.", "page de confirmation avec les codes d'accès des élèves importés."],
+    ],
+    dire: [
+      "L'administrateur gère les classes. Un nom de classe en double est refusé par le serveur et par la base.",
+      "À l'ajout d'un élève, le code d'accès est généré et affiché une seule fois : la base ne garde que son empreinte.",
+      "Pour inscrire une classe entière, j'importe un fichier Excel. Chaque ligne est vérifiée avant l'import : les erreurs et les doublons sont signalés, et seules les lignes valides sont enregistrées.",
+    ] },
+  { id: "refus", nom: "Saisie refusée et téléphone", court: "Refus · tél.", debut: 420, fin: 495,
+    objectif: "Prouver que le serveur revérifie tout, montrer les droits et l'affichage sur téléphone.",
+    etapes: [
+      ["Ouvrir les outils de développement (<kbd>F12</kbd>), puis <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> → taper <span class='saisie'>Disable JavaScript</span> → Entrée.", "le JavaScript de la page est coupé."],
+      ["Retourner sur la saisie de l'« Interrogation écrite », taper <span class='saisie'>25</span> dans une case vide, puis « Enregistrer les notes ».", "message rouge « 1 note(s) refusée(s) : aucune note n'a été enregistrée »."],
+      ["Réactiver le JavaScript (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> → <span class='saisie'>Enable JavaScript</span>).", ""],
+      ["Se déconnecter, se connecter avec <span class='saisie'>p.atangana</span> / <span class='saisie'>Prof!2026</span>, puis taper l'adresse <span class='saisie'>127.0.0.1:5000/admin/classes</span>.", "page 403 « Accès refusé » : un enseignant simple n'administre pas."],
+      ["Taper l'adresse <span class='saisie'>127.0.0.1:5000/page-inexistante</span>.", "page 404 personnalisée."],
+      ["Mode téléphone : <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd>, choisir « iPhone 12 Pro ». Montrer le menu replié (bouton ☰), se déconnecter, puis se connecter comme élève et montrer le bulletin.", "tout s'empile, pas de défilement horizontal, les notes deviennent une liste."],
+    ],
+    dire: [
+      "Le JavaScript n'est qu'un confort. Je le désactive et j'envoie une note de 25 : le serveur la refuse et n'enregistre aucune note.",
+      "Les droits sont vérifiés par le serveur : un enseignant simple qui tape l'adresse de l'administration reçoit une page 403.",
+      "Le CSS est écrit d'abord pour le téléphone, avec deux points de rupture à 600 et 1024 pixels : le site reste confortable sur un petit écran.",
+    ] },
+  { id: "code", nom: "Explication d'un extrait de code", court: "Code", debut: 495, fin: 555,
+    objectif: "Expliquer le calcul des rangs avec ex æquo et la sécurité des requêtes.",
+    etapes: [
+      ["Dans VS Code, ouvrir <code>calculs.py</code>, fonction <code>classer</code>.", ""],
+      ["Montrer dans <code>app.py</code> une requête avec des <code>?</code> (par exemple la correction d'une note).", ""],
+    ],
+    dire: [
+      "Voici la fonction classer. Les moyennes sont d'abord arrondies au centième, puis triées de la plus forte à la plus faible.",
+      "Je parcours la liste : tant que la moyenne est la même que la précédente, l'élève garde le même rang. Quand elle change, il prend le rang égal à sa position. Deux élèves à 12,50 sont donc tous les deux deuxièmes, et le suivant est quatrième.",
+      "Toutes les requêtes SQL sont paramétrées avec des points d'interrogation : une saisie ne peut jamais modifier la requête. Les mots de passe et les codes sont hachés avec generate_password_hash.",
+    ] },
+  { id: "conclusion", nom: "Conclusion", court: "Fin", debut: 555, fin: 585,
+    objectif: "Bilan, limites et remerciements.",
+    etapes: [
+      ["Revenir sur la page d'accueil (ou la diapositive de conclusion du rapport).", ""],
+    ],
+    dire: [
+      "Pour conclure : toutes les fonctionnalités du sujet sont réalisées, avec les deux bonus, l'impression du bulletin et l'appréciation automatique, ainsi que la gestion des évaluations et l'import d'élèves. Le site passe le validateur HTML du W3C et 84 tests automatiques.",
+      "Comme améliorations, on pourrait gérer plusieurs devoirs par séquence et envoyer les bulletins aux parents. Merci de votre attention.",
+    ] },
+];
+const DUREE_TOTALE = SCENES[SCENES.length - 1].fin;
+
+// ---------- Mémoire locale (cases cochées) ----------
+const CLE = "plan-tournage-portail-notes";
+function lireEtat() {
+  try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch (e) { return {}; }
+}
+function ecrireEtat(etat) {
+  try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (e) { /* stockage indisponible : on continue sans */ }
+}
+let etat = lireEtat();
+
+function mmss(secondes) {
+  const m = Math.floor(secondes / 60), s = Math.floor(secondes % 60);
+  return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+}
+
+// ---------- Construction de la page ----------
+function boutonCopier(valeur) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "btn copier"; b.textContent = "Copier";
+  b.addEventListener("click", function () { copier(valeur, b); });
+  return b;
+}
+function copier(texte, bouton) {
+  const fini = function () { bouton.textContent = "Copié"; bouton.classList.add("fait"); setTimeout(function () { bouton.textContent = "Copier"; bouton.classList.remove("fait"); }, 1500); };
+  try {
+    navigator.clipboard.writeText(texte).then(fini).catch(function () { selectionner(bouton); });
+  } catch (e) { selectionner(bouton); }
+}
+function selectionner(bouton) {
+  const cible = bouton.parentElement.querySelector("code, pre");
+  if (!cible) return;
+  const plage = document.createRange(); plage.selectNodeContents(cible);
+  const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(plage);
+  bouton.textContent = "Sélectionné";
+}
+
+function construireComptes() {
+  const zone = document.getElementById("liste-comptes");
+  COMPTES.forEach(function (c) {
+    const carte = document.createElement("article");
+    carte.className = "compte";
+    carte.innerHTML = '<div class="compte-role"><strong></strong><span class="pastille"></span></div>';
+    carte.querySelector("strong").textContent = c.role;
+    const pastille = carte.querySelector(".pastille");
+    pastille.textContent = c.badge[0]; pastille.classList.add(c.badge[1]);
+    c.champs.forEach(function (champ) {
+      const ligne = document.createElement("div");
+      ligne.className = "champ-copie";
+      const libelle = document.createElement("span"); libelle.textContent = champ[0];
+      const code = document.createElement("code"); code.textContent = champ[1];
+      ligne.append(libelle, code, boutonCopier(champ[1]));
+      carte.appendChild(ligne);
+    });
+    const note = document.createElement("p"); note.textContent = c.note;
+    carte.appendChild(note);
+    zone.appendChild(carte);
+  });
+}
+
+function construireEtapes(liste, groupe, items) {
+  items.forEach(function (item, i) {
+    const html = Array.isArray(item) ? item[0] : item;
+    const attendu = Array.isArray(item) ? item[1] : "";
+    const id = groupe + "-" + i;
+    const li = document.createElement("li");
+    li.className = "etape";
+    li.innerHTML = '<input type="checkbox" id="' + id + '"><label for="' + id + '">' + html +
+      (attendu ? '<span class="attendu"></span>' : "") + "</label>";
+    if (attendu) li.querySelector(".attendu").textContent = attendu;
+    const caseCocher = li.querySelector("input");
+    caseCocher.checked = Boolean(etat[id]);
+    li.classList.toggle("cochee", caseCocher.checked);
+    caseCocher.addEventListener("change", function () {
+      etat[id] = caseCocher.checked; ecrireEtat(etat);
+      li.classList.toggle("cochee", caseCocher.checked);
+      majProgression();
+    });
+    liste.appendChild(li);
+  });
+}
+
+function construireScenes() {
+  const zone = document.getElementById("scenes");
+  const sommaire = document.getElementById("sommaire");
+  const repartition = document.getElementById("repartition");
+  [["comptes", "Comptes de test", ""], ["preparation", "Préparation", "avant"]].forEach(function (s) {
+    const a = document.createElement("a"); a.href = "#" + s[0];
+    a.innerHTML = '<span class="horaire"></span><span></span>';
+    a.children[0].textContent = s[2]; a.children[1].textContent = s[1];
+    sommaire.appendChild(a);
+  });
+  SCENES.forEach(function (sc) {
+    const bloc = document.createElement("section");
+    bloc.className = "bloc"; bloc.id = sc.id;
+    bloc.setAttribute("aria-labelledby", "t-" + sc.id);
+    bloc.innerHTML =
+      '<div class="bloc-entete"><h2 id="t-' + sc.id + '"></h2><span class="duree"></span></div>' +
+      '<p class="objectif"></p><ul class="etapes"></ul>' +
+      '<div class="a-dire"><span class="a-dire-titre">À dire</span></div>';
+    bloc.querySelector("h2").textContent = sc.nom;
+    bloc.querySelector(".duree").textContent = mmss(sc.debut) + " → " + mmss(sc.fin);
+    bloc.querySelector(".objectif").textContent = sc.objectif;
+    construireEtapes(bloc.querySelector(".etapes"), sc.id, sc.etapes);
+    const dire = bloc.querySelector(".a-dire");
+    sc.dire.forEach(function (phrase) { const p = document.createElement("p"); p.textContent = "« " + phrase + " »"; dire.appendChild(p); });
+    zone.appendChild(bloc);
+
+    const a = document.createElement("a"); a.href = "#" + sc.id; a.dataset.scene = sc.id;
+    a.innerHTML = '<span class="horaire"></span><span></span>';
+    a.children[0].textContent = mmss(sc.debut); a.children[1].textContent = sc.nom;
+    sommaire.appendChild(a);
+
+    const segment = document.createElement("a"); segment.href = "#" + sc.id; segment.dataset.scene = sc.id;
+    segment.style.flex = String(sc.fin - sc.debut);
+    segment.textContent = sc.court; segment.title = sc.nom + " (" + mmss(sc.debut) + " → " + mmss(sc.fin) + ")";
+    repartition.appendChild(segment);
+  });
+  const a = document.createElement("a"); a.href = "#apres";
+  a.innerHTML = '<span class="horaire">après</span><span>Après l\'enregistrement</span>';
+  sommaire.appendChild(a);
+}
+
+function majProgression() {
+  const cases = document.querySelectorAll(".etape input");
+  const cochees = Array.from(cases).filter(function (c) { return c.checked; }).length;
+  document.getElementById("progression-texte").textContent = cochees + " / " + cases.length + " étapes cochées";
+  document.getElementById("progression-barre").style.width = (100 * cochees / cases.length) + "%";
+}
+
+// ---------- Chronomètre ----------
+let ecoule = 0, depart = null, minuterie = null;
+function tempsActuel() { return ecoule + (depart ? (Date.now() - depart) / 1000 : 0); }
+function majChrono() {
+  const t = tempsActuel();
+  document.getElementById("chrono").textContent = mmss(t);
+  document.getElementById("barre-temps").style.width = Math.min(100, 100 * t / DUREE_TOTALE) + "%";
+  const scene = SCENES.find(function (s) { return t >= s.debut && t < s.fin; });
+  const nom = document.getElementById("scene-nom");
+  if (!depart && t === 0) {
+    nom.textContent = "Préparation : chronomètre arrêté";
+  } else if (scene) {
+    nom.textContent = scene.nom + " · encore " + mmss(scene.fin - t);
+  } else {
+    nom.textContent = t >= 600 ? "Au-delà de 10 min : concluez" : "Terminé, il reste de la marge";
+  }
+  document.querySelectorAll("[data-scene]").forEach(function (el) {
+    el.classList.toggle("active", Boolean(scene) && el.dataset.scene === scene.id);
+  });
+}
+document.getElementById("btn-chrono").addEventListener("click", function () {
+  const bouton = this;
+  if (depart) {
+    ecoule = tempsActuel(); depart = null; clearInterval(minuterie);
+    bouton.textContent = "Reprendre";
+  } else {
+    depart = Date.now(); minuterie = setInterval(majChrono, 250);
+    bouton.textContent = "Pause";
+  }
+  majChrono();
+});
+document.getElementById("btn-zero").addEventListener("click", function () {
+  ecoule = 0; depart = null; clearInterval(minuterie);
+  document.getElementById("btn-chrono").textContent = "Démarrer";
+  majChrono();
+});
+document.addEventListener("keydown", function (e) {
+  if (e.code === "Space" && e.target === document.body) { e.preventDefault(); document.getElementById("btn-chrono").click(); }
+});
+
+// ---------- Onglets des commandes ----------
+const onglets = Array.from(document.querySelectorAll(".onglet"));
+onglets.forEach(function (onglet) {
+  onglet.addEventListener("click", function () {
+    onglets.forEach(function (o) {
+      const actif = o === onglet;
+      o.setAttribute("aria-selected", actif ? "true" : "false");
+      document.getElementById(o.getAttribute("aria-controls")).hidden = !actif;
+    });
+  });
+});
+document.querySelectorAll("[data-copier-bloc]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    const texte = b.parentElement.querySelector("pre").innerText
+      .split("\n").filter(function (l) { return !/^(#|REM)/.test(l.trim()); }).join("\n");
+    copier(texte, b);
+  });
+});
+
+document.getElementById("btn-decocher").addEventListener("click", function () {
+  etat = {}; ecrireEtat(etat);
+  document.querySelectorAll(".etape input").forEach(function (c) { c.checked = false; c.closest(".etape").classList.remove("cochee"); });
+  majProgression();
+});
+
+construireComptes();
+construireEtapes(document.querySelector('[data-groupe="preparation"]'), "preparation", PREPARATION);
+construireScenes();
+construireEtapes(document.querySelector('[data-groupe="apres"]'), "apres", APRES);
+majProgression();
+majChrono();
+</script>
